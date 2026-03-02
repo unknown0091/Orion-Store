@@ -78,7 +78,7 @@ export interface StoreConfig {
   easterEggUrl?: string;
 }
 
-export type Tab = 'android' | 'pc' | 'tv' | 'about' | 'pricing';
+export type Tab = 'dashboard' | 'android' | 'pc' | 'tv' | 'about' | 'pricing';
 
 export enum PackageTier {
   STARTER = 'Starter',
@@ -103,6 +103,8 @@ export interface UserAccount {
   activatedOn?: string;
   licenseKey?: string;
   downloadCount: number;
+  totalSavingsMb: number; // For the "Storage Saved" dashboard stat
+  lastDownloadAt?: string;
 }
 
 export enum SortOption {

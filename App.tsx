@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
@@ -6,7 +5,7 @@ import { LocalNotifications, ActionPerformed } from '@capacitor/local-notificati
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { UnityAds } from 'capacitor-unity-ads';
 import { DEV_SOCIALS, DEFAULT_FAQS, DEFAULT_DEV_PROFILE, DEFAULT_SUPPORT_EMAIL, DEFAULT_EASTER_EGG, CACHE_VERSION, NETWORK_TIMEOUT_MS } from './constants';
-import { Platform, AppItem, Tab, AppVariant, StoreConfig, AppCategory, SortOption } from './types';
+import { Platform, AppItem, Tab, AppVariant, StoreConfig, AppCategory, SortOption, PackageTier, UserAccount, StorePackage } from './types';
 import AppCard from './components/AppCard';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
@@ -14,9 +13,9 @@ import StoreFilters from './components/StoreFilters';
 import { localAppsData } from './localData';
 import AppTracker from './plugins/AppTracker';
 import { STORE_PACKAGES } from './constants';
-import { PackageTier, UserAccount, StorePackage } from './types';
 import PricingView from './components/PricingView';
 import ActivationModal from './components/ActivationModal';
+import DashboardView from './components/DashboardView';
 
 // --- LAZY LOAD HEAVY COMPONENTS ---
 const AppDetail = lazy(() => import('./components/AppDetail'));
@@ -168,7 +167,7 @@ const fetchWithRetry = async (url: string, options: any, retries = 3, backoff = 
 };
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('android');
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [selectedApp, setSelectedApp] = useState<AppItem | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
@@ -252,9 +251,14 @@ const App: React.FC = () => {
    const [userAccount, setUserAccount] = useState<UserAccount>(() => {
        try {
            const saved = safeStorage.getItem('pretub_user_account');
-           const defaultAcc = { isActivated: false, tier: PackageTier.NONE, downloadCount: 0 };
+           const defaultAcc: UserAccount = { 
+               isActivated: false, 
+               tier: PackageTier.NONE, 
+               downloadCount: 0,
+               totalSavingsMb: 0
+           };
            return saved ? { ...defaultAcc, ...JSON.parse(saved) } : defaultAcc;
-       } catch { return { isActivated: false, tier: PackageTier.NONE, downloadCount: 0 }; }
+       } catch { return { isActivated: false, tier: PackageTier.NONE, downloadCount: 0, totalSavingsMb: 0 }; }
    });
 
   useEffect(() => {
@@ -268,7 +272,8 @@ const App: React.FC = () => {
            tier: pkg.tier,
            activatedOn: new Date().toISOString(),
            licenseKey: license,
-           downloadCount: 0
+           downloadCount: 0,
+           totalSavingsMb: 0
        };
       setUserAccount(newAccount);
       Haptics.notification({ type: NotificationType.Success });
@@ -1420,6 +1425,16 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto w-full pb-28 min-h-[50vh]">
         <div key={activeTab} className="animate-tab-enter">
+            {activeTab === 'dashboard' && (
+                <DashboardView 
+                    userAccount={userAccount} 
+                    apps={apps} 
+                    onNavigateToTab={(tab) => setActiveTab(tab)}
+                    onOpenPricing={() => setActiveTab('pricing')}
+                    installedCount={Object.keys(installedVersions).length}
+                    updateCount={updateCount}
+                />
+            )}
             {activeTab === 'android' && renderAppGrid(Platform.ANDROID)}
             {activeTab === 'pc' && renderAppGrid(Platform.PC)}
             {activeTab === 'tv' && renderAppGrid(Platform.TV)}
