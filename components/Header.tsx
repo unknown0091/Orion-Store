@@ -12,6 +12,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   updateCount?: number;
   activeDownloadCount?: number;
+  userAccount?: { isActivated: boolean; tier: string };
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -23,7 +24,8 @@ const Header: React.FC<HeaderProps> = ({
   activeTab,
   onOpenSettings,
   updateCount = 0,
-  activeDownloadCount = 0
+  activeDownloadCount = 0,
+  userAccount = { isActivated: false, tier: 'None' }
 }) => {
   const hasNotifications = updateCount > 0 || activeDownloadCount > 0 || storeUpdateAvailable;
 
@@ -48,6 +50,12 @@ const Header: React.FC<HeaderProps> = ({
                     Pretub<span className="text-primary">.store</span>
                 </h1>
 
+                {userAccount.isActivated && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-600 dark:from-amber-600 dark:to-orange-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 transform hover:-translate-y-0.5 transition-transform cursor-default">
+                        <i className={`fas ${userAccount.tier === 'Elite' ? 'fa-crown animate-pulse' : 'fa-gem'}`}></i>
+                        <span>{userAccount.tier}</span>
+                    </div>
+                )}
             </div>
         </div>
         

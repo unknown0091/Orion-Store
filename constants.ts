@@ -71,3 +71,48 @@ export const DEFAULT_FAQS: FAQItem[] = [
 export const MICROG_DEPENDENT_APPS = ['youtube-revanced', 'yt-music-revanced', 'revanced-manager'];
 export const MICROG_INFO_URL = 'https://microg.org/';
 
+import { StorePackage, PackageTier } from './types';
+
+export const STORE_PACKAGES: StorePackage[] = [
+  {
+    id: 'pkg_starter',
+    tier: PackageTier.STARTER,
+    name: 'Starter Bundle',
+    price: '$9.99',
+    description: 'Perfect for casual users who want a clean app store experience.',
+    features: [
+      'Download up to 10 Apps',
+      'Automatic APK Cleanup',
+      'One-time Lifetime Payment',
+      'Standard Support'
+    ]
+  },
+  {
+    id: 'pkg_pro',
+    tier: PackageTier.PRO,
+    name: 'Pro Collector',
+    price: '$19.99',
+    description: 'Unlock premium mods and advanced developer features.',
+    recommended: true,
+    features: [
+      'Download up to 100 Apps',
+      'Full Premium Catalog',
+      'Early Access to New Mods',
+      'Priority Support'
+    ]
+  },
+  {
+    id: 'pkg_elite',
+    tier: PackageTier.ELITE,
+    name: 'Elite Guardian',
+    price: '$39.99',
+    description: 'The ultimate toolkit for power users. All-in-one access.',
+    features: [
+      'Unlimited App Downloads',
+      'Everything in Pro',
+      'Source Code Access',
+      'Zero Ads Guaranteed Forever'
+    ]
+  }
+];
+

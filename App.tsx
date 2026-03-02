@@ -13,6 +13,10 @@ import BottomNav from './components/BottomNav';
 import StoreFilters from './components/StoreFilters';
 import { localAppsData } from './localData';
 import AppTracker from './plugins/AppTracker';
+import { STORE_PACKAGES } from './constants';
+import { PackageTier, UserAccount, StorePackage } from './types';
+import PricingView from './components/PricingView';
+import ActivationModal from './components/ActivationModal';
 
 // --- LAZY LOAD HEAVY COMPONENTS ---
 const AppDetail = lazy(() => import('./components/AppDetail'));
@@ -213,13 +217,14 @@ const App: React.FC = () => {
   const [installingId, setInstallingId] = useState<string | null>(null);
   const [showInstallToast, setShowInstallToast] = useState<{app: AppItem, file: string} | null>(null);
   const [showErrorToast, setShowErrorToast] = useState(false);
+  const [showAdDonation, setShowAdDonation] = useState(false); 
+  const [showActivationModal, setShowActivationModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('Failed to load apps');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedSort, setSelectedSort] = useState<SortOption>(SortOption.NEWEST);
   const [profileImgError, setProfileImgError] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
-  const [showAdDonation, setShowAdDonation] = useState(false); 
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [submissionCooldown, setSubmissionCooldown] = useState<string | null>(null);
   const [submissionCount, setSubmissionCount] = useState(() => parseInt(safeStorage.getItem('submission_count') || '0'));
@@ -243,6 +248,32 @@ const App: React.FC = () => {
           return saved ? JSON.parse(saved) : [];
       } catch { return []; }
   });
+
+   const [userAccount, setUserAccount] = useState<UserAccount>(() => {
+       try {
+           const saved = safeStorage.getItem('pretub_user_account');
+           const defaultAcc = { isActivated: false, tier: PackageTier.NONE, downloadCount: 0 };
+           return saved ? { ...defaultAcc, ...JSON.parse(saved) } : defaultAcc;
+       } catch { return { isActivated: false, tier: PackageTier.NONE, downloadCount: 0 }; }
+   });
+
+  useEffect(() => {
+      safeStorage.setItem('pretub_user_account', JSON.stringify(userAccount));
+  }, [userAccount]);
+
+  const handleActivate = (pkg: StorePackage) => {
+      const license = `PRETUB-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+       const newAccount: UserAccount = {
+           isActivated: true,
+           tier: pkg.tier,
+           activatedOn: new Date().toISOString(),
+           licenseKey: license,
+           downloadCount: 0
+       };
+      setUserAccount(newAccount);
+      Haptics.notification({ type: NotificationType.Success });
+      setActiveTab('android');
+  };
 
   const [apps, setApps] = useState<AppItem[]>(() => {
       const cached = safeStorage.getItem('orion_cached_apps_v2');
@@ -583,17 +614,18 @@ const App: React.FC = () => {
       safeStorage.setItem('active_native_downloads', JSON.stringify(activeDownloads));
   }, [activeDownloads]);
 
-  const handleDownloadStart = useCallback((appId: string, downloadId: string, fileName: string) => {
-      const compositeValue = `${downloadId}|${fileName}`;
-      setActiveDownloads(prev => ({ ...prev, [appId]: compositeValue }));
-      setReadyToInstall(prev => { 
-          if (!prev[appId]) return prev;
-          const n = {...prev}; delete n[appId]; 
-          safeStorage.setItem('ready_to_install', JSON.stringify(n));
-          return n; 
-      });
-      Haptics.impact({ style: ImpactStyle.Medium });
-  }, []);
+   const handleDownloadStart = useCallback((appId: string, downloadId: string, fileName: string) => {
+       const compositeValue = `${downloadId}|${fileName}`;
+       setActiveDownloads(prev => ({ ...prev, [appId]: compositeValue }));
+       setUserAccount(curr => ({ ...curr, downloadCount: curr.downloadCount + 1 }));
+       setReadyToInstall(prev => { 
+           if (!prev[appId]) return prev;
+           const n = {...prev}; delete n[appId]; 
+           safeStorage.setItem('ready_to_install', JSON.stringify(n));
+           return n; 
+       });
+       Haptics.impact({ style: ImpactStyle.Medium });
+   }, []);
 
   const handleCancelDownload = useCallback(async (app: AppItem, compositeId: string) => {
       const [dlId] = compositeId.split('|');
@@ -676,6 +708,27 @@ const App: React.FC = () => {
           setSelectedApp(app);
           return;
       }
+       if (!userAccount.isActivated) {
+           setShowActivationModal(true);
+           Haptics.notification({ type: NotificationType.Warning });
+           return;
+       }
+
+       // --- ENFORCE TIERED LIMITS ---
+       const limits: Record<PackageTier, number> = {
+           [PackageTier.STARTER]: 10,
+           [PackageTier.PRO]: 100,
+           [PackageTier.ELITE]: Infinity,
+           [PackageTier.NONE]: 0
+       };
+
+       if (userAccount.downloadCount >= limits[userAccount.tier]) {
+           setErrorMsg(`Download Limit Reached! Your ${userAccount.tier} plan supports up to ${limits[userAccount.tier]} apps. Upgrade to Pro or Elite for more.`);
+           setShowErrorToast(true);
+           Haptics.notification({ type: NotificationType.Error });
+           return;
+       }
+
       const targetUrl = url || app.variants?.[0]?.url || app.downloadUrl;
       if (!targetUrl || targetUrl === '#') return;
       if (wifiOnly && !isWifiConnected()) {
@@ -1186,6 +1239,7 @@ const App: React.FC = () => {
                 downloadProgress={downloadProgressMap[app.id]} 
                 downloadStatus={downloadStatusMap[app.id]} 
                 isReadyToInstall={!!readyToInstall[app.id]}
+                isActivated={userAccount.isActivated}
               />
             ))}
           </div>
@@ -1270,7 +1324,7 @@ const App: React.FC = () => {
             </div>
         </div>
       )}
-      <Header onTitleClick={handleHeaderClick} storeUpdateAvailable={storeUpdateAvailable} onUpdateStore={() => setShowStoreUpdateModal(true)} theme={theme} toggleTheme={toggleTheme} activeTab={activeTab} onOpenSettings={() => setShowSettingsModal(true)} updateCount={updateCount} activeDownloadCount={Object.keys(activeDownloads).length} />
+      <Header onTitleClick={handleHeaderClick} storeUpdateAvailable={storeUpdateAvailable} onUpdateStore={() => setShowStoreUpdateModal(true)} theme={theme} toggleTheme={toggleTheme} activeTab={activeTab} onOpenSettings={() => setShowSettingsModal(true)} updateCount={updateCount} activeDownloadCount={Object.keys(activeDownloads).length} userAccount={userAccount} />
       
       {remoteConfig?.announcement && !isAnnouncementDismissed && activeTab !== 'about' && (
         <div className="px-6 mb-2 animate-fade-in max-w-7xl mx-auto w-full">
@@ -1299,6 +1353,13 @@ const App: React.FC = () => {
             {activeTab === 'android' && renderAppGrid(Platform.ANDROID)}
             {activeTab === 'pc' && renderAppGrid(Platform.PC)}
             {activeTab === 'tv' && renderAppGrid(Platform.TV)}
+            {activeTab === 'pricing' && (
+                <PricingView 
+                    userAccount={userAccount} 
+                    onActivate={handleActivate} 
+                    theme={theme} 
+                />
+            )}
             {activeTab === 'about' && (
                 <Suspense fallback={<div className="flex justify-center p-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
                     <AboutView devProfile={devProfile} socialLinks={socialLinks} faqs={faqs} isLegend={isLegend} isContributor={isContributor} adWatchCount={adWatchCount} profileImgError={profileImgError} setProfileImgError={setProfileImgError} handleProfileClick={() => { setEasterEggCount(e => e + 1); if(easterEggCount >= 7) { window.open(easterEggUrl); setEasterEggCount(0); setIsLegend(true); safeStorage.setItem('isLegend', 'true'); Haptics.notification({ type: NotificationType.Success }); } }} setShowFAQ={setShowFAQ} onOpenAdDonation={() => setShowAdDonation(true)} isDevUnlocked={isDevUnlocked} useRemoteJson={useRemoteJson} toggleSourceMode={() => { setUseRemoteJson(!useRemoteJson); Haptics.selection(); }} githubToken={githubToken} isEditingToken={isEditingToken} setIsEditingToken={setIsEditingToken} saveGithubToken={saveGithubToken} currentStoreVersion={CURRENT_STORE_VERSION} onWipeCache={() => { localStorage.clear(); window.location.reload(); }} onTestStoreUpdate={handleTestUpdateModal} mirrorSource={mirrorSource} hiddenTabs={hiddenTabs} toggleHiddenTab={toggleHiddenTab} autoUpdateEnabled={autoUpdateEnabled} toggleAutoUpdate={toggleAutoUpdate} availableUpdates={availableUpdates} onTriggerUpdate={() => {}} />
@@ -1335,6 +1396,7 @@ const App: React.FC = () => {
                   onCancelDownload={(app, dlId) => handleCancelDownload(app, dlId)}
                   onNavigateToApp={handleNavigateToApp}
                   onDeleteReadyFile={handleDeleteReadyFile}
+                  isActivated={userAccount.isActivated}
               />
           )}
           {showFAQ && <FAQModal onClose={() => setShowFAQ(false)} items={faqs} />}
@@ -1359,6 +1421,13 @@ const App: React.FC = () => {
           {showSubmissionModal && <SubmissionModal onClose={() => setShowSubmissionModal(false)} currentStoreVersion={CURRENT_STORE_VERSION} onSuccess={handleSubmissionSuccess} submissionCount={submissionCount} activeTab={activeTab} />}
           {showAdDonation && <AdDonationModal onClose={() => setShowAdDonation(false)} onSuccess={handleAdWatched} currentStreak={adWatchCount} />}
           
+          {showActivationModal && (
+              <ActivationModal 
+                  onClose={() => setShowActivationModal(false)}
+                  onGoToPricing={() => { setShowActivationModal(false); setSelectedApp(null); setActiveTab('pricing'); }}
+              />
+          )}
+
           {showStoreUpdateModal && (isTestingUpdate || (remoteConfig?.latestStoreVersion)) && (
               <StoreUpdateModal 
                 currentVersion={CURRENT_STORE_VERSION} 

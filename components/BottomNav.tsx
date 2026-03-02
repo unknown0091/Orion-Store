@@ -45,6 +45,14 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, hiddenTab
          )}
 
          <button 
+            onClick={() => onTabChange('pricing')}
+            className={`px-5 py-3 rounded-[1.5rem] font-bold transition-all duration-200 flex items-center gap-2 ${activeTab === 'pricing' ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'text-theme-sub hover:bg-theme-element'}`}
+         >
+            <i className="fas fa-gem text-lg"></i>
+            {activeTab === 'pricing' && <span className="animate-fade-in text-sm ml-2">Plans</span>}
+         </button>
+
+         <button 
             onClick={() => onTabChange('about')}
             className={`px-6 py-3 rounded-[1.5rem] font-bold transition-all duration-200 flex items-center gap-2 ${activeTab === 'about' ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'text-theme-sub hover:bg-theme-element'}`}
          >

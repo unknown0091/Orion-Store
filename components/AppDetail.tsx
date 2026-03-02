@@ -38,6 +38,7 @@ interface AppDetailProps {
   onCancelDownload?: (app: AppItem, id: string) => void;
   onDeleteReadyFile?: (app: AppItem, fileName: string) => void; 
   onNavigateToApp?: (appId: string) => void;
+  isActivated?: boolean;
 }
 
 const getOptimizedImageUrl = (url: string, height: number = 600) => {
@@ -99,7 +100,7 @@ const AppDetail: React.FC<AppDetailProps> = ({
     app, onClose, onDownload, isInstalling, localVersion, supportEmail, isUpdateAvailable, 
     activeDownloadId, cleanupFileName, onCleanupDone,
     currentProgress, currentStatus, readyFileName,
-    onCancelDownload, onDeleteReadyFile
+    onCancelDownload, onDeleteReadyFile, isActivated = true
 }) => {
   const [showVariants, setShowVariants] = useState(false);
   const [showMicroGNotice, setShowMicroGNotice] = useState(false);
@@ -130,6 +131,10 @@ const AppDetail: React.FC<AppDetailProps> = ({
   }, [cleanupFileName]);
 
   const handleAction = (url?: string) => {
+      if (!isActivated) {
+          onDownload(app, url); // Let App.tsx handle the activation redirection/error
+          return;
+      }
       if (isInstalling || activeDownloadId) return;
       if (MICROG_DEPENDENT_APPS.includes(app.id) && !url && !readyFileName) {
           setShowMicroGNotice(true);

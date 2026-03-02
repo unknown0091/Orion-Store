@@ -10,7 +10,8 @@ export enum AppCategory {
 
 export enum Platform {
   ANDROID = 'Android',
-  PC = 'PC'
+  PC = 'PC',
+  TV = 'TV'
 }
 
 export interface AppVariant {
@@ -77,7 +78,32 @@ export interface StoreConfig {
   easterEggUrl?: string;
 }
 
-export type Tab = 'android' | 'pc' | 'about';
+export type Tab = 'android' | 'pc' | 'tv' | 'about' | 'pricing';
+
+export enum PackageTier {
+  STARTER = 'Starter',
+  PRO = 'Pro',
+  ELITE = 'Elite',
+  NONE = 'None'
+}
+
+export interface StorePackage {
+  id: string;
+  tier: PackageTier;
+  price: string;
+  name: string;
+  description: string;
+  features: string[];
+  recommended?: boolean;
+}
+
+export interface UserAccount {
+  isActivated: boolean;
+  tier: PackageTier;
+  activatedOn?: string;
+  licenseKey?: string;
+  downloadCount: number;
+}
 
 export enum SortOption {
   NEWEST = 'Newest',

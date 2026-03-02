@@ -19,11 +19,12 @@ interface AppCardProps {
   downloadProgress?: number;
   downloadStatus?: string;
   isReadyToInstall?: boolean;
+  isActivated?: boolean;
 }
 
 // WRAPPED IN MEMO: This prevents the card from re-rendering if its props haven't changed.
 // This is critical when "App.tsx" updates state (like another app's download progress).
-const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion, hasUpdateNotification, downloadProgress, downloadStatus, isReadyToInstall }) => {
+const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion, hasUpdateNotification, downloadProgress, downloadStatus, isReadyToInstall, isActivated = true }) => {
   const [imgStatus, setImgStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
 
   const isInstalled = !!localVersion;
@@ -131,8 +132,8 @@ const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion
       </div>
 
       <div className="flex items-center">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors border ${isReadyToInstall ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/30 border-primary' : 'bg-theme-element text-theme-sub border-theme-border'}`}>
-            <i className={`fas ${isDownloading ? 'fa-spinner fa-spin' : isReadyToInstall ? 'fa-download animate-bounce' : 'fa-chevron-right'} text-xs`}></i>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors border ${!isActivated ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : isReadyToInstall ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/30 border-primary' : 'bg-theme-element text-theme-sub border-theme-border'}`}>
+            <i className={`fas ${!isActivated ? 'fa-lock' : isDownloading ? 'fa-spinner fa-spin' : isReadyToInstall ? 'fa-download animate-bounce' : 'fa-chevron-right'} text-xs`}></i>
         </div>
       </div>
     </div>
@@ -145,7 +146,8 @@ const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion
         prev.downloadStatus === next.downloadStatus &&
         prev.isReadyToInstall === next.isReadyToInstall &&
         prev.app.id === next.app.id &&
-        prev.app.name === next.app.name
+        prev.app.name === next.app.name &&
+        prev.isActivated === next.isActivated
     );
 });
 
