@@ -341,20 +341,7 @@ const AppDetail: React.FC<AppDetailProps> = ({
             </div>
         </div>
 
-        {app.repoUrl && app.repoUrl !== '#' && (
-            <div className="px-6 mb-6">
-                <button 
-                    onClick={() => {
-                        Haptics.selectionStart();
-                        window.open(app.repoUrl, '_blank');
-                    }}
-                    className="w-full py-4 bg-card border border-theme-border rounded-2xl flex items-center justify-center gap-3 hover:bg-theme-element transition-all active:scale-[0.98] shadow-sm group"
-                >
-                    <i className="fab fa-github text-2xl text-theme-text group-hover:scale-110 transition-transform"></i>
-                    <span className="font-bold text-theme-text">Show Repository</span>
-                </button>
-            </div>
-        )}
+
 
         <div className="mb-8"><h3 className="px-6 text-lg font-bold text-theme-text mb-4">Preview</h3><div className="flex gap-4 overflow-x-auto px-6 pb-4 no-scrollbar snap-x">{app.screenshots.map((src, idx) => <LazyScreenshot key={idx} src={src} index={idx} platform={app.platform} />)}</div></div>
         <div className="px-6 mb-8"><h3 className="text-lg font-bold text-theme-text mb-3">About this app</h3><p className="text-theme-sub leading-relaxed whitespace-pre-wrap font-medium text-sm">{app.description}</p></div>
@@ -365,7 +352,7 @@ const AppDetail: React.FC<AppDetailProps> = ({
                 {isInstalled && <div className="flex justify-between items-center py-3 border-b border-theme-border"><span className="text-theme-sub font-medium text-sm">Installed Version</span><span className="text-theme-text font-bold text-sm">{localVersion}</span></div>}
                 <div className="flex justify-between items-center py-3 border-b border-theme-border"><span className="text-theme-sub font-medium text-sm">Developer</span><span className="text-theme-text font-bold text-sm text-primary">{app.author}</span></div>
                  <div className="flex justify-between items-center py-3 border-b border-theme-border"><span className="text-theme-sub font-medium text-sm">Size</span><span className="text-theme-text font-bold text-sm">{app.size}</span></div>
-                 {app.githubRepo && <div className="flex justify-between items-center py-3 border-b border-theme-border"><span className="text-theme-sub font-medium text-sm">Source</span><span className="text-theme-text font-mono text-xs opacity-70 truncate max-w-[150px]">{app.githubRepo}</span></div>}
+
                  {app.packageName && <div className="flex justify-between items-center py-3 border-b border-theme-border"><span className="text-theme-sub font-medium text-sm">Package</span><span className="text-theme-text font-mono text-xs opacity-70 truncate max-w-[150px]">{app.packageName}</span></div>}
             </div>
         </div>

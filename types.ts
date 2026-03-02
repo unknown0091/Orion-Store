@@ -41,7 +41,7 @@ export interface AppItem {
 }
 
 export interface SocialLinks {
-  github: string;
+  github?: string;
   x: string;
   discord: string;
   coffee: string;

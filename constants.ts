@@ -20,7 +20,6 @@ export const CATEGORY_GRADIENTS: Record<string, string> = {
 export const MOCK_APPS: AppItem[] = [];
 
 export const DEV_SOCIALS = {
-  github: 'https://github.com/RookieEnough',
   x: 'https://x.com/_Rookie_Z',
   discord: 'https://discord.com/invite/CrM6y4ujnq',
   coffee: 'https://ko-fi.com/rookie_z'
@@ -38,7 +37,7 @@ export const DEFAULT_EASTER_EGG = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 export const DEFAULT_FAQS: FAQItem[] = [
   {
     question: "Is Pretub Store safe?",
-    answer: "Absolutely. Pretub Store is completely open-source. This means our code is public on GitHub for anyone to audit. We believe in transparency—no hidden trackers, no data mining, just a clean gateway to apps.",
+    answer: "Absolutely. Pretub Store is built with security and transparency in mind. We believe in being honest with our users—no hidden trackers, no data mining, just a clean gateway to apps.",
     icon: "fa-shield-cat"
   },
   {

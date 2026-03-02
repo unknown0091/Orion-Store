@@ -1051,7 +1051,7 @@ const App: React.FC = () => {
                  const mirrorReq = await fetchWithRetry(`${activeMirrorUrl}${appsTs}`, {}, 1);
                  if (mirrorReq.ok) { 
                     mirrorData = await mirrorReq.json(); 
-                    if(isMounted.current) setMirrorSource('Remote (GitHub)'); 
+                    if(isMounted.current) setMirrorSource('Remote Server'); 
                  }
             } catch (e) { 
                 try {
