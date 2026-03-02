@@ -1206,8 +1206,13 @@ const App: React.FC = () => {
 
   const renderAppGrid = (platform: Platform) => {
     const platformApps = visibleApps.filter(a => a.platform === platform);
+    
+    // Logic for featured apps: just take the first few that match the platform and are not being filtered by search/category
+    const featuredApps = platformApps.slice(0, 3);
+    const remainingApps = platformApps.slice(3);
+
     return (
-      <div className="px-6">
+      <div className="px-6 space-y-6">
         <StoreFilters 
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
           selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
@@ -1218,30 +1223,69 @@ const App: React.FC = () => {
           onAddApp={() => setShowSubmissionModal(true)} submissionCooldown={submissionCooldown}
           count={appCounts[platform.toLowerCase() as keyof typeof appCounts]}
         />
+
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-            {[...Array(6)].map((_, i) => ( <div key={i} className="h-24 bg-theme-element animate-pulse rounded-3xl" /> ))}
+            {[...Array(6)].map((_, i) => ( <div key={i} className="h-24 bg-theme-element animate-pulse rounded-[2rem]" /> ))}
           </div>
         ) : platformApps.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-theme-sub animate-fade-in">
-             <i className="fas fa-search text-5xl mb-4 opacity-10"></i>
-             <p className="font-bold text-lg">No {platform} apps found</p>
+          <div className="flex flex-col items-center justify-center py-32 text-theme-sub animate-fade-in text-center px-10">
+             <div className="w-24 h-24 bg-theme-element rounded-[3rem] flex items-center justify-center mb-6 opacity-40">
+                <i className="fas fa-search text-4xl"></i>
+             </div>
+             <p className="font-black text-2xl text-theme-text tracking-tighter mb-2">No results found</p>
+             <p className="text-sm font-medium opacity-60 max-w-xs">We couldn't find any {platform} apps matching your criteria. Try adjusting your search or category filters.</p>
+             <button onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }} className="mt-8 px-6 py-3 bg-theme-element text-primary font-black text-xs uppercase tracking-widest rounded-2xl border border-theme-border hover:border-primary/50 transition-all">Clear Filters</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-            {platformApps.map(app => (
-              <AppCard 
-                key={app.id} 
-                app={app} 
-                onClick={handleAppClick} 
-                localVersion={installedVersions[app.id]}
-                hasUpdateNotification={!!installedVersions[app.id] && installedVersions[app.id] !== "Installed" && compareVersions(app.latestVersion, installedVersions[app.id]) > 0}
-                downloadProgress={downloadProgressMap[app.id]} 
-                downloadStatus={downloadStatusMap[app.id]} 
-                isReadyToInstall={!!readyToInstall[app.id]}
-                isActivated={userAccount.isActivated}
-              />
-            ))}
+          <div className="space-y-8 pb-10">
+            {/* Featured Section - Only show when not searching or filtering by category */}
+            {searchQuery === '' && selectedCategory === 'All' && featuredApps.length > 0 && (
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-black text-theme-text tracking-tighter">Featured {platform}</h2>
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded-md">Editor's Choice</span>
+                    </div>
+                    <div className="flex overflow-x-auto gap-4 -mx-6 px-6 pb-4 no-scrollbar snap-x">
+                        {featuredApps.map(app => (
+                            <div key={app.id} className="min-w-[280px] md:min-w-[320px] snap-center">
+                                <AppCard 
+                                    app={app} 
+                                    onClick={handleAppClick} 
+                                    localVersion={installedVersions[app.id]}
+                                    hasUpdateNotification={!!installedVersions[app.id] && installedVersions[app.id] !== "Installed" && compareVersions(app.latestVersion, installedVersions[app.id]) > 0}
+                                    downloadProgress={downloadProgressMap[app.id]} 
+                                    downloadStatus={downloadStatusMap[app.id]} 
+                                    isReadyToInstall={!!readyToInstall[app.id]}
+                                    isActivated={userAccount.isActivated}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Main List */}
+            <div className="space-y-4">
+                {searchQuery === '' && selectedCategory === 'All' && remainingApps.length > 0 && (
+                    <h2 className="text-xl font-black text-theme-text tracking-tighter">All {platform} Apps</h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+                    {(searchQuery !== '' || selectedCategory !== 'All' ? platformApps : remainingApps).map(app => (
+                        <AppCard 
+                            key={app.id} 
+                            app={app} 
+                            onClick={handleAppClick} 
+                            localVersion={installedVersions[app.id]}
+                            hasUpdateNotification={!!installedVersions[app.id] && installedVersions[app.id] !== "Installed" && compareVersions(app.latestVersion, installedVersions[app.id]) > 0}
+                            downloadProgress={downloadProgressMap[app.id]} 
+                            downloadStatus={downloadStatusMap[app.id]} 
+                            isReadyToInstall={!!readyToInstall[app.id]}
+                            isActivated={userAccount.isActivated}
+                        />
+                    ))}
+                </div>
+            </div>
           </div>
         )}
       </div>
