@@ -1326,6 +1326,32 @@ const App: React.FC = () => {
       )}
       <Header onTitleClick={handleHeaderClick} storeUpdateAvailable={storeUpdateAvailable} onUpdateStore={() => setShowStoreUpdateModal(true)} theme={theme} toggleTheme={toggleTheme} activeTab={activeTab} onOpenSettings={() => setShowSettingsModal(true)} updateCount={updateCount} activeDownloadCount={Object.keys(activeDownloads).length} userAccount={userAccount} />
       
+      {!userAccount.isActivated && activeTab !== 'pricing' && (
+        <div className="px-6 mb-4 animate-fade-in max-w-7xl mx-auto w-full">
+            <div 
+                onClick={() => setActiveTab('pricing')}
+                className="group relative overflow-hidden bg-gradient-to-r from-orange-500 to-amber-500 p-4 rounded-[2rem] shadow-xl shadow-orange-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
+            >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl">
+                            <i className="fas fa-unlock-alt animate-bounce"></i>
+                        </div>
+                        <div className="text-left">
+                            <p className="text-white font-black text-sm">Action Required: Activate Pretub Store</p>
+                            <p className="text-white/80 text-[10px] font-bold uppercase tracking-wider">Unlock lifetime downloads & premium categories</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl text-white font-black text-xs">
+                        <span>Activate</span>
+                        <i className="fas fa-arrow-right text-[10px]"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+
       {remoteConfig?.announcement && !isAnnouncementDismissed && activeTab !== 'about' && (
         <div className="px-6 mb-2 animate-fade-in max-w-7xl mx-auto w-full">
             <div className={`relative group overflow-hidden border-2 border-blue-500/40 rounded-[2rem] p-4 flex items-center gap-4 shadow-lg shadow-blue-500/5 group ${theme === 'light' ? 'bg-blue-600/10' : 'bg-blue-600/15'}`}>
