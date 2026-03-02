@@ -67,3 +67,7 @@ export const DEFAULT_FAQS: FAQItem[] = [
     icon: "fa-user-secret"
   }
 ];
+
+export const MICROG_DEPENDENT_APPS = ['youtube-revanced', 'yt-music-revanced', 'revanced-manager'];
+export const MICROG_INFO_URL = 'https://microg.org/';
+

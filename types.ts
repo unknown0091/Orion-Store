@@ -78,3 +78,13 @@ export interface StoreConfig {
 }
 
 export type Tab = 'android' | 'pc' | 'about';
+
+export enum SortOption {
+  NEWEST = 'Newest',
+  NAME_ASC = 'Name (A-Z)',
+  NAME_DESC = 'Name (Z-A)',
+  SIZE_ASC = 'Size (Smallest)',
+  SIZE_DESC = 'Size (Largest)'
+}
+
+
