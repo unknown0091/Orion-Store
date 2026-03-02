@@ -11,12 +11,12 @@
     "resources": "node scripts/generate_assets.js"
   },
   "dependencies": {
-    "@capacitor-community/admob": "^7.2.0",
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/app": "latest",
-    "@capacitor/core": "latest",
-    "@capacitor/haptics": "^8.0.1",
-    "@capacitor/local-notifications": "^8.0.1",
+    "@capacitor-community/admob": "^8.0.0",
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/local-notifications": "^8.0.0",
     "capacitor-unity-ads": "^1.0.0",
     "fuse.js": "^7.1.0",
     "puppeteer": "latest",
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "latest",
-    "@capacitor/cli": "latest",
+    "@capacitor/cli": "^8.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
