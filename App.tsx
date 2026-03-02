@@ -497,7 +497,7 @@ const App: React.FC = () => {
       if (Capacitor.isNativePlatform()) {
           try {
               await AppTracker.requestPermissions();
-              await LocalNotifications.createChannel({ id: 'orion_updates', name: 'Orion Updates', importance: 3 });
+              await LocalNotifications.createChannel({ id: 'orion_updates', name: 'Pretub Updates', importance: 3 });
               await LocalNotifications.createChannel({ id: 'orion_cleanup', name: 'Cleanup', importance: 4 });
               await LocalNotifications.requestPermissions();
           } catch (e) {}
@@ -1213,7 +1213,7 @@ const App: React.FC = () => {
         <div className="min-h-screen bg-surface text-theme-text transition-colors duration-300 font-sans flex flex-col items-center justify-center p-6 text-center animate-fade-in relative overflow-hidden">
             <h1 className="text-4xl font-black text-theme-text mb-4 tracking-tighter relative z-10">System Offline</h1>
             <p className="text-theme-sub text-lg font-medium max-w-sm leading-relaxed mb-10 relative z-10">
-                {remoteConfig.maintenanceMessage || "Orion Store is currently undergoing scheduled maintenance."}
+                {remoteConfig.maintenanceMessage || "Pretub Store is currently undergoing scheduled maintenance."}
             </p>
         </div>
       );
@@ -1263,7 +1263,7 @@ const App: React.FC = () => {
             <div className="bg-primary/95 backdrop-blur-xl text-white p-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-white/20">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0"> <i className="fas fa-sync-alt animate-spin text-lg"></i> </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black leading-tight">Orion Auto-Update</p>
+                    <p className="text-sm font-black leading-tight">Pretub Auto-Update</p>
                     <p className="text-[10px] opacity-80 font-medium">Updating {autoUpdateBanner.count} apps in background...</p>
                 </div>
                 <button onClick={() => setAutoUpdateBanner({ ...autoUpdateBanner, visible: false })} className="text-white/60 hover:text-white"><i className="fas fa-times"></i></button>

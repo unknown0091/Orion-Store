@@ -32,17 +32,17 @@ export const DEFAULT_DEV_PROFILE: DevProfile = {
   image: "https://i.pinimg.com/originals/12/79/48/127948a3253396796874286570740594.jpg"
 };
 
-export const DEFAULT_SUPPORT_EMAIL = 'orionstoredev@gmail.com';
+export const DEFAULT_SUPPORT_EMAIL = 'pretubstoredev@gmail.com';
 export const DEFAULT_EASTER_EGG = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
 export const DEFAULT_FAQS: FAQItem[] = [
   {
-    question: "Is Orion Store safe?",
-    answer: "Absolutely. Orion Store is completely open-source. This means our code is public on GitHub for anyone to audit. We believe in transparency—no hidden trackers, no data mining, just a clean gateway to apps.",
+    question: "Is Pretub Store safe?",
+    answer: "Absolutely. Pretub Store is completely open-source. This means our code is public on GitHub for anyone to audit. We believe in transparency—no hidden trackers, no data mining, just a clean gateway to apps.",
     icon: "fa-shield-cat"
   },
   {
-    question: "Are apps on Orion safe?",
+    question: "Are apps on Pretub safe?",
     answer: "Yes. I personally review and mod them using tools available on their official repositories to ensure they are safe, functional, and privacy-respecting before they land here.",
     icon: "fa-check-double"
   },

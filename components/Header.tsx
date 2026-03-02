@@ -31,8 +31,12 @@ const Header: React.FC<HeaderProps> = ({
     <header className="relative z-30 w-full px-6 pb-6 pt-[calc(1.5rem+env(safe-area-inset-top))] flex justify-between items-center bg-surface transition-all duration-300">
         <div className="flex items-center gap-3 select-none relative group">
             <div className="relative">
-                <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 transform rotate-3">
-                    <i className="fas fa-shapes text-lg"></i>
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/10 transition-transform hover:rotate-6 active:scale-95 overflow-hidden">
+                    <img 
+                        src="assets/pretub-icon.png" 
+                        alt="Pretub Logo" 
+                        className="w-full h-full object-cover p-1"
+                    />
                 </div>
             </div>
             
