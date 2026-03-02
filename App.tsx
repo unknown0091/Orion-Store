@@ -399,10 +399,10 @@ const App: React.FC = () => {
 
   const scrollToTop = () => {
       const root = document.getElementById('root');
-      if (root) {
-          root.scrollTo({ top: 0, behavior: 'smooth' });
-          Haptics.selection();
-      }
+        if (root) {
+            root.scrollTo({ top: 0, behavior: 'smooth' });
+            Haptics.selectionStart();
+        }
   };
 
   useEffect(() => {
@@ -541,52 +541,52 @@ const App: React.FC = () => {
           if (prev.includes(tabName)) next = prev.filter(t => t !== tabName);
           else next = [...prev, tabName];
           if (['android', 'pc', 'tv'].filter(t => !next.includes(t)).length === 0) return prev;
-          safeStorage.setItem('hidden_tabs', JSON.stringify(next));
-          Haptics.selection();
-          return next;
-      });
+            safeStorage.setItem('hidden_tabs', JSON.stringify(next));
+            Haptics.selectionStart();
+            return next;
+        });
   };
 
   const toggleAutoUpdate = async () => {
       const newState = !autoUpdateEnabled;
-      setAutoUpdateEnabled(newState);
-      safeStorage.setItem('auto_update_enabled', String(newState));
-      Haptics.selection();
-      if (newState) { await requestPermissions(); checkForUpdates(); }
+        setAutoUpdateEnabled(newState);
+        safeStorage.setItem('auto_update_enabled', String(newState));
+        Haptics.selectionStart();
+        if (newState) { await requestPermissions(); checkForUpdates(); }
   };
 
   const toggleWifiOnly = () => {
-      setWifiOnly(!wifiOnly);
-      safeStorage.setItem('wifi_only', String(!wifiOnly));
-      Haptics.selection();
-  };
+        setWifiOnly(!wifiOnly);
+        safeStorage.setItem('wifi_only', String(!wifiOnly));
+        Haptics.selectionStart();
+    };
 
   const toggleDeleteApk = async () => {
       const newState = !deleteApk;
-      if (newState) await requestPermissions();
-      setDeleteApk(newState);
-      safeStorage.setItem('delete_apk', String(newState));
-      Haptics.selection();
-  };
+        if (newState) await requestPermissions();
+        setDeleteApk(newState);
+        safeStorage.setItem('delete_apk', String(newState));
+        Haptics.selectionStart();
+    };
 
   const toggleDisableAnimations = () => {
-      setDisableAnimations(!disableAnimations);
-      safeStorage.setItem('disable_anim', String(!disableAnimations));
-      Haptics.selection();
-  };
+        setDisableAnimations(!disableAnimations);
+        safeStorage.setItem('disable_anim', String(!disableAnimations));
+        Haptics.selectionStart();
+    };
 
   const toggleCompactMode = () => {
-      setCompactMode(!compactMode);
-      safeStorage.setItem('compact_mode', String(!compactMode));
-      Haptics.selection();
-  };
+        setCompactMode(!compactMode);
+        safeStorage.setItem('compact_mode', String(!compactMode));
+        Haptics.selectionStart();
+    };
 
   const toggleHighRefreshRate = () => {
-      const newState = !highRefreshRate;
-      setHighRefreshRate(newState);
-      safeStorage.setItem('high_refresh_rate', String(newState));
-      Haptics.selection();
-  };
+        const newState = !highRefreshRate;
+        setHighRefreshRate(newState);
+        safeStorage.setItem('high_refresh_rate', String(newState));
+        Haptics.selectionStart();
+    };
 
   const toggleTab = (tab: Tab) => {
       if (tab !== 'about' && hiddenTabs.includes(tab)) return;
@@ -925,11 +925,11 @@ const App: React.FC = () => {
 
   const handleDismissAnnouncement = () => {
       if (remoteConfig?.announcement) {
-          const hash = getStringHash(remoteConfig.announcement);
-          safeStorage.setItem('dismissed_announcement_hash', String(hash));
-          setIsAnnouncementDismissed(true);
-          Haptics.selection();
-      }
+            const hash = getStringHash(remoteConfig.announcement);
+            safeStorage.setItem('dismissed_announcement_hash', String(hash));
+            setIsAnnouncementDismissed(true);
+            Haptics.selectionStart();
+        }
   };
 
   const handleTestUpdateModal = () => {
@@ -1388,7 +1388,51 @@ const App: React.FC = () => {
             )}
             {activeTab === 'about' && (
                 <Suspense fallback={<div className="flex justify-center p-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
-                    <AboutView devProfile={devProfile} socialLinks={socialLinks} faqs={faqs} isLegend={isLegend} isContributor={isContributor} adWatchCount={adWatchCount} profileImgError={profileImgError} setProfileImgError={setProfileImgError} handleProfileClick={() => { setEasterEggCount(e => e + 1); if(easterEggCount >= 7) { window.open(easterEggUrl); setEasterEggCount(0); setIsLegend(true); safeStorage.setItem('isLegend', 'true'); Haptics.notification({ type: NotificationType.Success }); } }} setShowFAQ={setShowFAQ} onOpenAdDonation={() => setShowAdDonation(true)} isDevUnlocked={isDevUnlocked} useRemoteJson={useRemoteJson} toggleSourceMode={() => { setUseRemoteJson(!useRemoteJson); Haptics.selection(); }} githubToken={githubToken} isEditingToken={isEditingToken} setIsEditingToken={setIsEditingToken} saveGithubToken={saveGithubToken} currentStoreVersion={CURRENT_STORE_VERSION} onWipeCache={() => { localStorage.clear(); window.location.reload(); }} onTestStoreUpdate={handleTestUpdateModal} mirrorSource={mirrorSource} hiddenTabs={hiddenTabs} toggleHiddenTab={toggleHiddenTab} autoUpdateEnabled={autoUpdateEnabled} toggleAutoUpdate={toggleAutoUpdate} availableUpdates={availableUpdates} onTriggerUpdate={() => {}} />
+                    <AboutView 
+                        devProfile={devProfile} 
+                        socialLinks={socialLinks} 
+                        faqs={faqs} 
+                        isLegend={isLegend} 
+                        isContributor={isContributor} 
+                        adWatchCount={adWatchCount} 
+                        profileImgError={profileImgError} 
+                        setProfileImgError={setProfileImgError} 
+                        handleProfileClick={() => { 
+                            setEasterEggCount(e => e + 1); 
+                            if(easterEggCount >= 7) { 
+                                window.open(easterEggUrl); 
+                                setEasterEggCount(0); 
+                                setIsLegend(true); 
+                                safeStorage.setItem('isLegend', 'true'); 
+                                Haptics.notification({ type: NotificationType.Success }); 
+                            } 
+                        }} 
+                        setShowFAQ={setShowFAQ} 
+                        onOpenAdDonation={() => setShowAdDonation(true)} 
+                        isDevUnlocked={isDevUnlocked} 
+                        useRemoteJson={useRemoteJson} 
+                        toggleSourceMode={() => { 
+                            setUseRemoteJson(!useRemoteJson); 
+                            Haptics.selectionStart(); 
+                        }} 
+                        githubToken={githubToken} 
+                        isEditingToken={isEditingToken} 
+                        setIsEditingToken={setIsEditingToken} 
+                        saveGithubToken={saveGithubToken} 
+                        currentStoreVersion={CURRENT_STORE_VERSION} 
+                        onWipeCache={() => { 
+                            localStorage.clear(); 
+                            window.location.reload(); 
+                        }} 
+                        onTestStoreUpdate={handleTestUpdateModal} 
+                        mirrorSource={mirrorSource} 
+                        hiddenTabs={hiddenTabs} 
+                        toggleHiddenTab={toggleHiddenTab} 
+                        autoUpdateEnabled={autoUpdateEnabled} 
+                        toggleAutoUpdate={toggleAutoUpdate} 
+                        availableUpdates={availableUpdates} 
+                        onTriggerUpdate={() => {}} 
+                    />
                 </Suspense>
             )}
         </div>

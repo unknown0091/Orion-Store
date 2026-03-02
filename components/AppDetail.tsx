@@ -8,6 +8,12 @@ import { AppItem, Platform } from '../types';
 import { MICROG_DEPENDENT_APPS, MICROG_INFO_URL, CATEGORY_GRADIENTS } from '../constants';
 import AppTracker from '../plugins/AppTracker';
 
+declare global {
+  interface String {
+    hashCode(): number;
+  }
+}
+
 // Polyfill for hashCode
 if (!String.prototype.hashCode) {
     String.prototype.hashCode = function() {
@@ -267,7 +273,7 @@ const AppDetail: React.FC<AppDetailProps> = ({
         <div className="px-4 pb-0 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between z-10 relative">
             <button onClick={onClose} className="w-10 h-10 rounded-full bg-theme-element/80 border border-theme-border backdrop-blur-md flex items-center justify-center hover:bg-theme-hover transition-colors text-theme-text shadow-sm"><i className="fas fa-arrow-left"></i></button>
             <div className="flex gap-3">
-                <button onClick={() => { Haptics.selection(); setShowVariants(true); }} className="w-10 h-10 rounded-full bg-theme-element/80 border border-theme-border backdrop-blur-md flex items-center justify-center hover:bg-theme-hover transition-colors text-theme-text shadow-sm"><i className="fas fa-share-alt"></i></button>
+                <button onClick={() => { Haptics.selectionStart(); setShowVariants(true); }} className="w-10 h-10 rounded-full bg-theme-element/80 border border-theme-border backdrop-blur-md flex items-center justify-center hover:bg-theme-hover transition-colors text-theme-text shadow-sm"><i className="fas fa-share-alt"></i></button>
                 <button onClick={() => { Haptics.impact({ style: ImpactStyle.Light }); const subject = `Report Issue: ${app.name}`; window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}`; }} className="w-10 h-10 rounded-full bg-theme-element/80 border border-theme-border backdrop-blur-md text-theme-sub flex items-center justify-center hover:text-red-500 transition-colors shadow-sm"><i className="fas fa-flag"></i></button>
             </div>
         </div>
@@ -308,7 +314,7 @@ const AppDetail: React.FC<AppDetailProps> = ({
             <div className="px-6 mb-6">
                 <button 
                     onClick={() => {
-                        Haptics.selection();
+                        Haptics.selectionStart();
                         window.open(app.repoUrl, '_blank');
                     }}
                     className="w-full py-4 bg-card border border-theme-border rounded-2xl flex items-center justify-center gap-3 hover:bg-theme-element transition-all active:scale-[0.98] shadow-sm group"
@@ -344,7 +350,7 @@ const AppDetail: React.FC<AppDetailProps> = ({
                 <p className="text-theme-sub text-center text-sm mb-8 leading-relaxed font-medium">The APK for <b>{app.name}</b> is no longer needed. Should we wipe it to free up space?</p>
                 <div className="flex flex-col gap-3">
                     <button onClick={handleCleanupDelete} className="w-full py-4 rounded-2xl font-bold bg-acid text-black shadow-lg shadow-acid/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"><i className="fas fa-trash-alt"></i><span>Delete APK</span></button>
-                    <button onClick={() => { Haptics.selection(); setShowCleanupPrompt(false); if(onCleanupDone) onCleanupDone(); }} className="w-full py-3 rounded-2xl font-bold bg-theme-element text-theme-sub hover:bg-theme-hover transition-colors text-xs uppercase tracking-widest">Keep for now</button>
+                    <button onClick={() => { Haptics.selectionStart(); setShowCleanupPrompt(false); if(onCleanupDone) onCleanupDone(); }} className="w-full py-3 rounded-2xl font-bold bg-theme-element text-theme-sub hover:bg-theme-hover transition-colors text-xs uppercase tracking-widest">Keep for now</button>
                 </div>
             </div>
         </div>
