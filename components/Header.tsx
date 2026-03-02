@@ -41,8 +41,9 @@ const Header: React.FC<HeaderProps> = ({
                     onClick={onTitleClick}
                     className="text-2xl font-black tracking-tighter text-theme-text cursor-pointer active:scale-95 transition-transform relative z-10"
                 >
-                    Orion<span className="text-primary">Store</span>
+                    Pretub<span className="text-primary">.store</span>
                 </h1>
+
             </div>
         </div>
         

@@ -1,7 +1,7 @@
 {
-  "name": "orion-store",
+  "name": "pretub.store",
   "version": "1.0.1",
-  "description": "OrionStore - Serverless App Store",
+  "description": "pretub.store - Serverless App Store",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,4 +1,4 @@
-package com.orion.store;
+package com.pretub.store;
 
 import android.os.Bundle;
 import android.webkit.WebView;
