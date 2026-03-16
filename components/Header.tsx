@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Tab } from '../types';
+import pretubIcon from '../assets/pretub-icon.png';
 
 interface HeaderProps {
   onTitleClick: () => void;
@@ -36,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="relative">
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/10 transition-transform hover:rotate-6 active:scale-95 overflow-hidden">
                     <img 
-                        src="assets/pretub-icon.png" 
+                        src={pretubIcon}
                         alt="Pretub Logo" 
                         className="w-full h-full object-cover p-1"
                     />
