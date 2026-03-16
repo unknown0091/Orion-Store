@@ -30,7 +30,8 @@ const Header: React.FC<HeaderProps> = ({
   const hasNotifications = updateCount > 0 || activeDownloadCount > 0;
 
   return (
-    <header className="sticky top-0 z-30 w-full px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center bg-surface/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
+    <header className="sticky top-0 z-30 w-full bg-surface/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
+      <div className="max-w-5xl mx-auto w-full px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center">
         <div className="flex items-center gap-3 select-none relative group">
             <div className="relative">
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/10 transition-transform hover:rotate-6 active:scale-95 overflow-hidden">
@@ -62,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-3">
 
 
-            <div className="relative">
+            <div className="relative hidden">
                 <button 
                     onClick={onOpenSettings}
                     className={`w-10 h-10 rounded-full bg-theme-element hover:bg-theme-hover flex items-center justify-center text-theme-sub hover:text-primary transition-all hover:scale-110 active:scale-95 shadow-sm ${activeDownloadCount > 0 ? 'animate-pulse text-primary' : ''}`}
@@ -90,6 +91,7 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
             )}
         </div>
+      </div>
     </header>
   );
 };
