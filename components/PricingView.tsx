@@ -18,9 +18,7 @@ const PricingView: React.FC<PricingViewProps> = ({ userAccount, onActivate, them
 
   const handleSelect = async (pkg: StorePackage) => {
     Haptics.impact({ style: ImpactStyle.Heavy });
-    if (confirm(`You will be redirected to our secure WooCommerce checkout to purchase the ${pkg.name}. Continue?`)) {
-      await Browser.open({ url: pkg.checkoutUrl });
-    }
+    await Browser.open({ url: pkg.checkoutUrl });
   };
 
   const verifyPurchase = async () => {

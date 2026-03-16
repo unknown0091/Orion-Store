@@ -85,7 +85,7 @@ export const STORE_PACKAGES: StorePackage[] = [
     price: '$19.99',
     sellPrice: '$9.99',
     discount: '50% OFF',
-    checkoutUrl: `${WOO_CHECKOUT_URL}101`, // Replace 101 with WooCommerce Product ID
+    checkoutUrl: `${WOO_CHECKOUT_URL}918`, // Replace 101 with WooCommerce Product ID
     description: 'Perfect for casual users who want a clean app store experience.',
     features: [
       'Download up to 10 Apps',
@@ -101,7 +101,7 @@ export const STORE_PACKAGES: StorePackage[] = [
     price: '$39.99',
     sellPrice: '$19.99',
     discount: '50% OFF',
-    checkoutUrl: `${WOO_CHECKOUT_URL}102`, // Replace 102 with WooCommerce Product ID
+    checkoutUrl: `${WOO_CHECKOUT_URL}919`, // Replace 102 with WooCommerce Product ID
     description: 'Unlock premium mods and advanced developer features.',
     recommended: true,
     features: [
@@ -118,7 +118,7 @@ export const STORE_PACKAGES: StorePackage[] = [
     price: '$79.99',
     sellPrice: '$39.99',
     discount: '50% OFF',
-    checkoutUrl: `${WOO_CHECKOUT_URL}103`, // Replace 103 with WooCommerce Product ID
+    checkoutUrl: `${WOO_CHECKOUT_URL}920`, // Replace 103 with WooCommerce Product ID
     description: 'The ultimate toolkit for power users. All-in-one access.',
     features: [
       'Unlimited App Downloads',
