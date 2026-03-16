@@ -55,7 +55,7 @@ const StoreFilters: React.FC<StoreFiltersProps> = ({
   return (
     <div className="animate-fade-in relative z-20 space-y-4 mb-6">
       {/* Search Bar Row */}
-      <div className="relative z-10 flex gap-2">
+      <div className=" mt-5 relative z-10 flex gap-2">
         <div className="relative flex-1 group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-acid via-primary to-neon rounded-2xl opacity-10 group-focus-within:opacity-100 transition duration-500 blur group-focus-within:blur-md"></div>
           <div className="relative flex items-center bg-theme-input rounded-2xl border border-theme-border p-1 shadow-sm transition-all group-focus-within:scale-[1.01] group-focus-within:shadow-lg">
