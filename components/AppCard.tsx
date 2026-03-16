@@ -19,11 +19,12 @@ interface AppCardProps {
   downloadProgress?: number;
   downloadStatus?: string;
   isReadyToInstall?: boolean;
+  isActivated?: boolean;
 }
 
 // WRAPPED IN MEMO: This prevents the card from re-rendering if its props haven't changed.
 // This is critical when "App.tsx" updates state (like another app's download progress).
-const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion, hasUpdateNotification, downloadProgress, downloadStatus, isReadyToInstall }) => {
+const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion, hasUpdateNotification, downloadProgress, downloadStatus, isReadyToInstall, isActivated = true }) => {
   const [imgStatus, setImgStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
 
   const isInstalled = !!localVersion;
@@ -38,12 +39,14 @@ const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion
   return (
     <div 
       onClick={handleClick}
-      // Added 'app-card-optimized' for CSS containment
-      className="app-card-optimized app-card relative bg-card rounded-3xl p-4 flex items-center gap-4 cursor-pointer border border-theme-border active:scale-98 shadow-sm transition-transform"
+      className="app-card-optimized app-card group relative bg-card rounded-[2rem] p-4 flex items-center gap-4 cursor-pointer border border-theme-border hover:border-primary/30 active:scale-[0.97] transition-all duration-300 hover:shadow-xl hover:shadow-primary/5"
     >
       <div className="relative shrink-0 w-16 h-16">
+        {/* Subtle Icon Reflection for Premium Look */}
+        <div className="absolute inset-2 bg-gradient-to-br from-primary/20 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
         {imgStatus === 'loading' && (
-            <div className="absolute inset-0 bg-theme-element rounded-2xl" />
+            <div className="absolute inset-0 bg-theme-element rounded-2xl animate-pulse" />
         )}
 
         {imgStatus === 'error' ? (
@@ -56,7 +59,7 @@ const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion
              alt={app.name} 
              onLoad={() => setImgStatus('loaded')}
              onError={() => setImgStatus('error')}
-             className={`w-full h-full object-contain rounded-2xl transition-opacity duration-300 ${imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0'}`} 
+             className={`w-full h-full object-contain rounded-2xl transition-all duration-500 ${imgStatus === 'loaded' ? 'opacity-100' : 'opacity-0'} group-hover:scale-105 group-hover:drop-shadow-lg`} 
              style={{ background: "transparent" }}
              loading="lazy"
              decoding="async"
@@ -66,73 +69,76 @@ const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion
         {isUpdateAvailable && !isDownloading && !isReadyToInstall && (
           <span className="absolute -top-1 -right-1 flex h-4 w-4 z-10">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-acid opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-acid border-2 border-surface-light dark:border-surface-dark"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-acid border-2 border-card"></span>
           </span>
         )}
 
         {isDownloading && (
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] rounded-2xl flex items-center justify-center z-10 animate-fade-in overflow-hidden">
-                <svg className="w-10 h-10 transform -rotate-90">
-                    <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-white/20" />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-[4px] rounded-2xl flex items-center justify-center z-10 animate-fade-in overflow-hidden border border-white/10">
+                <svg className="w-12 h-12 transform -rotate-90 scale-75">
+                    <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-white/10" />
                     <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="transparent" 
                         strokeDasharray={100} strokeDashoffset={100 - (downloadProgress || 0)} 
-                        strokeLinecap="round" className="text-acid transition-all duration-300" />
+                        strokeLinecap="round" className="text-acid transition-all duration-300 shadow-[0_0_8px_rgba(200,255,0,0.5)]" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[10px] font-black text-white">{downloadProgress || 0}%</span>
+                    <span className="text-[9px] font-black text-white">{downloadProgress || 0}%</span>
                 </div>
             </div>
         )}
 
         {isReadyToInstall && (
-            <div className="absolute inset-0 bg-primary/20 backdrop-blur-[1px] rounded-2xl flex items-center justify-center z-10 animate-pulse border-2 border-primary/50">
-                <i className="fas fa-box-open text-primary text-xl"></i>
+            <div className="absolute inset-0 bg-primary/30 backdrop-blur-[2px] rounded-2xl flex items-center justify-center z-10 animate-pulse border-2 border-primary/50 shadow-lg shadow-primary/20">
+                <i className="fas fa-box-open text-white text-xl"></i>
             </div>
         )}
 
         {isInstalled && !isUpdateAvailable && !isDownloading && !isReadyToInstall && (
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-card flex items-center justify-center text-white text-[10px] z-10">
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-card flex items-center justify-center text-white text-[10px] z-10 shadow-md">
                 <i className="fas fa-check"></i>
             </div>
         )}
       </div>
 
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-bold text-theme-text truncate tracking-tight leading-tight">{app.name}</h3>
-        </div>
-        <p className="text-xs font-medium text-theme-sub">{app.author}</p>
-        <div className="flex items-center gap-2 mt-1">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                app.category === 'Media' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300' :
-                app.category === 'Social' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300' :
-                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+        <h3 className="text-[17px] font-black text-theme-text truncate tracking-tight leading-snug group-hover:text-primary transition-colors">{app.name}</h3>
+        <p className="text-[11px] font-bold text-theme-sub opacity-70 truncate">{app.author}</p>
+        
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                app.category === 'Media' ? 'bg-purple-500/10 text-purple-500 border border-purple-500/20' :
+                app.category === 'Social' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
+                'bg-theme-element text-theme-sub border border-theme-border'
              }`}>
             {app.category}
           </span>
+          
           {isDownloading ? (
-             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-primary/20 text-primary border border-primary/30">
-               DOWNLOADING...
-             </span>
+             <span className="text-[9px] font-black text-primary animate-pulse">DOWNLOADING...</span>
           ) : isReadyToInstall ? (
-             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-primary text-white shadow-lg shadow-primary/20">
-               INSTALL
+             <span className="text-[9px] font-black text-primary flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></span>
+                INSTALL
              </span>
           ) : isUpdateAvailable ? (
-             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-acid/20 text-acid-dark dark:text-acid border border-acid/30">
-               UPDATE
+             <span className="text-[9px] font-black text-acid flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-acid rounded-full"></span>
+                UPDATE Available
              </span>
           ) : isInstalled ? (
-             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
-               v{localVersion}
-             </span>
+             <span className="text-[9px] font-bold text-green-500/60 leading-none">v{localVersion}</span>
           ) : null}
         </div>
       </div>
 
-      <div className="flex items-center">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors border ${isReadyToInstall ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/30 border-primary' : 'bg-theme-element text-theme-sub border-theme-border'}`}>
-            <i className={`fas ${isDownloading ? 'fa-spinner fa-spin' : isReadyToInstall ? 'fa-download animate-bounce' : 'fa-chevron-right'} text-xs`}></i>
+      <div className="flex items-center shrink-0">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border ${
+            !isActivated ? 'bg-orange-500/10 text-orange-500 border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white' : 
+            isReadyToInstall ? 'bg-primary text-white scale-110 shadow-xl shadow-primary/30 border-primary' : 
+            isDownloading ? 'bg-theme-element text-primary border-primary/20' :
+            'bg-theme-element text-theme-sub border-theme-border group-hover:border-primary/50 group-hover:text-primary'
+        }`}>
+            <i className={`fas ${!isActivated ? 'fa-lock' : isDownloading ? 'fa-spinner fa-spin' : isReadyToInstall ? 'fa-download animate-bounce' : 'fa-chevron-right'} text-xs`}></i>
         </div>
       </div>
     </div>
@@ -145,7 +151,8 @@ const AppCard: React.FC<AppCardProps> = React.memo(({ app, onClick, localVersion
         prev.downloadStatus === next.downloadStatus &&
         prev.isReadyToInstall === next.isReadyToInstall &&
         prev.app.id === next.app.id &&
-        prev.app.name === next.app.name
+        prev.app.name === next.app.name &&
+        prev.isActivated === next.isActivated
     );
 });
 

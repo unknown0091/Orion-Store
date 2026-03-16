@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/orion_logo_512.png" width="170" alt="Orion Store Logo">
+  <img src="assets/pretub-icon.png" width="170" alt="Pretub Store Logo">
 </p>
 
-<h2 align="center">Orion Store</h2>
+<h2 align="center">Pretub Store</h2>
 
 <p align="center">
   <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB" alt="React"></a>

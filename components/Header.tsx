@@ -4,35 +4,42 @@ import { Tab } from '../types';
 
 interface HeaderProps {
   onTitleClick: () => void;
-  storeUpdateAvailable: boolean;
-  onUpdateStore: () => void;
+
+
   theme: 'light' | 'dusk' | 'dark' | 'oled';
   toggleTheme: () => void;
   activeTab: Tab;
   onOpenSettings: () => void;
   updateCount?: number;
   activeDownloadCount?: number;
+  userAccount?: { isActivated: boolean; tier: string };
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   onTitleClick, 
-  storeUpdateAvailable, 
-  onUpdateStore, 
+ 
+ 
   theme, 
   toggleTheme,
   activeTab,
   onOpenSettings,
   updateCount = 0,
-  activeDownloadCount = 0
+  activeDownloadCount = 0,
+  userAccount = { isActivated: false, tier: 'None' }
 }) => {
-  const hasNotifications = updateCount > 0 || activeDownloadCount > 0 || storeUpdateAvailable;
+  const hasNotifications = updateCount > 0 || activeDownloadCount > 0;
 
   return (
-    <header className="relative z-30 w-full px-6 pb-6 pt-[calc(1.5rem+env(safe-area-inset-top))] flex justify-between items-center bg-surface transition-all duration-300">
+    <header className="sticky top-0 z-30 w-full bg-surface/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
+      <div className="max-w-5xl mx-auto w-full px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center">
         <div className="flex items-center gap-3 select-none relative group">
             <div className="relative">
-                <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 transform rotate-3">
-                    <i className="fas fa-shapes text-lg"></i>
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/10 transition-transform hover:rotate-6 active:scale-95 overflow-hidden">
+                    <img 
+                        src="assets/pretub-icon.png" 
+                        alt="Pretub Logo" 
+                        className="w-full h-full object-cover p-1"
+                    />
                 </div>
             </div>
             
@@ -41,24 +48,22 @@ const Header: React.FC<HeaderProps> = ({
                     onClick={onTitleClick}
                     className="text-2xl font-black tracking-tighter text-theme-text cursor-pointer active:scale-95 transition-transform relative z-10"
                 >
-                    Orion<span className="text-primary">Store</span>
+                    Pretub<span className="text-primary">.store</span>
                 </h1>
+
+                {userAccount.isActivated && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-600 dark:from-amber-600 dark:to-orange-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 transform hover:-translate-y-0.5 transition-transform cursor-default">
+                        <i className={`fas ${userAccount.tier === 'Elite' ? 'fa-crown animate-pulse' : 'fa-gem'}`}></i>
+                        <span>{userAccount.tier}</span>
+                    </div>
+                )}
             </div>
         </div>
         
         <div className="flex items-center gap-3">
-            {storeUpdateAvailable && (
-                <button
-                    onClick={onUpdateStore}
-                    className="px-3 py-2 rounded-xl bg-acid/20 text-lime-700 dark:text-acid border border-acid/30 font-bold text-xs flex items-center gap-2 animate-pulse"
-                    title="Update Orion Store"
-                >
-                    <i className="fas fa-arrow-circle-up"></i>
-                    <span className="hidden sm:inline">Store Update</span>
-                </button>
-            )}
 
-            <div className="relative">
+
+            <div className="relative hidden">
                 <button 
                     onClick={onOpenSettings}
                     className={`w-10 h-10 rounded-full bg-theme-element hover:bg-theme-hover flex items-center justify-center text-theme-sub hover:text-primary transition-all hover:scale-110 active:scale-95 shadow-sm ${activeDownloadCount > 0 ? 'animate-pulse text-primary' : ''}`}
@@ -86,6 +91,7 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
             )}
         </div>
+      </div>
     </header>
   );
 };

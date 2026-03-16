@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
@@ -6,13 +5,17 @@ import { LocalNotifications, ActionPerformed } from '@capacitor/local-notificati
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { UnityAds } from 'capacitor-unity-ads';
 import { DEV_SOCIALS, DEFAULT_FAQS, DEFAULT_DEV_PROFILE, DEFAULT_SUPPORT_EMAIL, DEFAULT_EASTER_EGG, CACHE_VERSION, NETWORK_TIMEOUT_MS } from './constants';
-import { Platform, AppItem, Tab, AppVariant, StoreConfig, AppCategory, SortOption } from './types';
+import { Platform, AppItem, Tab, AppVariant, StoreConfig, AppCategory, SortOption, PackageTier, UserAccount, StorePackage } from './types';
 import AppCard from './components/AppCard';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import StoreFilters from './components/StoreFilters';
 import { localAppsData } from './localData';
 import AppTracker from './plugins/AppTracker';
+import { STORE_PACKAGES } from './constants';
+import PricingView from './components/PricingView';
+import ActivationModal from './components/ActivationModal';
+
 
 // --- LAZY LOAD HEAVY COMPONENTS ---
 const AppDetail = lazy(() => import('./components/AppDetail'));
@@ -21,7 +24,7 @@ const AdDonationModal = lazy(() => import('./components/AdDonationModal'));
 const AboutView = lazy(() => import('./components/AboutView'));
 const SubmissionModal = lazy(() => import('./components/SubmissionModal'));
 const SettingsModal = lazy(() => import('./components/SettingsModal'));
-const StoreUpdateModal = lazy(() => import('./components/StoreUpdateModal'));
+
 
 // APP CONSTANTS
 const CURRENT_STORE_VERSION = '1.0.8'; 
@@ -213,20 +216,18 @@ const App: React.FC = () => {
   const [installingId, setInstallingId] = useState<string | null>(null);
   const [showInstallToast, setShowInstallToast] = useState<{app: AppItem, file: string} | null>(null);
   const [showErrorToast, setShowErrorToast] = useState(false);
+  const [showAdDonation, setShowAdDonation] = useState(false); 
+  const [showActivationModal, setShowActivationModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('Failed to load apps');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedSort, setSelectedSort] = useState<SortOption>(SortOption.NEWEST);
   const [profileImgError, setProfileImgError] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
-  const [showAdDonation, setShowAdDonation] = useState(false); 
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [submissionCooldown, setSubmissionCooldown] = useState<string | null>(null);
   const [submissionCount, setSubmissionCount] = useState(() => parseInt(safeStorage.getItem('submission_count') || '0'));
-  const [storeUpdateAvailable, setStoreUpdateAvailable] = useState(false);
-  const [showStoreUpdateModal, setShowStoreUpdateModal] = useState(false);
-  const [isTestingUpdate, setIsTestingUpdate] = useState(false);
-  const [storeUpdateUrl, setStoreUpdateUrl] = useState('');
+
   const [isDevUnlocked, setIsDevUnlocked] = useState(() => safeStorage.getItem('isDevUnlocked') === 'true');
   const [devClickCount, setDevClickCount] = useState(0);
   const [devToast, setDevToast] = useState<string | null>(null);
@@ -243,6 +244,38 @@ const App: React.FC = () => {
           return saved ? JSON.parse(saved) : [];
       } catch { return []; }
   });
+
+   const [userAccount, setUserAccount] = useState<UserAccount>(() => {
+       try {
+           const saved = safeStorage.getItem('pretub_user_account');
+           const defaultAcc: UserAccount = { 
+               isActivated: false, 
+               tier: PackageTier.NONE, 
+               downloadCount: 0,
+               totalSavingsMb: 0
+           };
+           return saved ? { ...defaultAcc, ...JSON.parse(saved) } : defaultAcc;
+       } catch { return { isActivated: false, tier: PackageTier.NONE, downloadCount: 0, totalSavingsMb: 0 }; }
+   });
+
+  useEffect(() => {
+      safeStorage.setItem('pretub_user_account', JSON.stringify(userAccount));
+  }, [userAccount]);
+
+  const handleActivate = (pkg: StorePackage) => {
+      const license = `PRETUB-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+       const newAccount: UserAccount = {
+           isActivated: true,
+           tier: pkg.tier,
+           activatedOn: new Date().toISOString(),
+           licenseKey: license,
+           downloadCount: 0,
+           totalSavingsMb: 0
+       };
+      setUserAccount(newAccount);
+      Haptics.notification({ type: NotificationType.Success });
+      setActiveTab('android');
+  };
 
   const [apps, setApps] = useState<AppItem[]>(() => {
       const cached = safeStorage.getItem('orion_cached_apps_v2');
@@ -368,10 +401,10 @@ const App: React.FC = () => {
 
   const scrollToTop = () => {
       const root = document.getElementById('root');
-      if (root) {
-          root.scrollTo({ top: 0, behavior: 'smooth' });
-          Haptics.selection();
-      }
+        if (root) {
+            root.scrollTo({ top: 0, behavior: 'smooth' });
+            Haptics.selectionStart();
+        }
   };
 
   useEffect(() => {
@@ -438,13 +471,13 @@ const App: React.FC = () => {
           else if (showFAQ) setShowFAQ(false);
           else if (showSubmissionModal) setShowSubmissionModal(false);
           else if (showAdDonation) setShowAdDonation(false);
-          else if (showStoreUpdateModal) setShowStoreUpdateModal(false);
+
           else if (activeTab !== 'android') setActiveTab('android');
           else CapacitorApp.exitApp();
       };
       const backListener = CapacitorApp.addListener('backButton', handleBack);
       return () => { backListener.then(h => h.remove()); };
-  }, [selectedApp, showSettingsModal, showFAQ, showSubmissionModal, showAdDonation, activeTab, showStoreUpdateModal]);
+  }, [selectedApp, showSettingsModal, showFAQ, showSubmissionModal, showAdDonation, activeTab]);
 
   useEffect(() => {
       if (!Capacitor.isNativePlatform()) return;
@@ -497,7 +530,7 @@ const App: React.FC = () => {
       if (Capacitor.isNativePlatform()) {
           try {
               await AppTracker.requestPermissions();
-              await LocalNotifications.createChannel({ id: 'orion_updates', name: 'Orion Updates', importance: 3 });
+              await LocalNotifications.createChannel({ id: 'orion_updates', name: 'Pretub Updates', importance: 3 });
               await LocalNotifications.createChannel({ id: 'orion_cleanup', name: 'Cleanup', importance: 4 });
               await LocalNotifications.requestPermissions();
           } catch (e) {}
@@ -510,52 +543,52 @@ const App: React.FC = () => {
           if (prev.includes(tabName)) next = prev.filter(t => t !== tabName);
           else next = [...prev, tabName];
           if (['android', 'pc', 'tv'].filter(t => !next.includes(t)).length === 0) return prev;
-          safeStorage.setItem('hidden_tabs', JSON.stringify(next));
-          Haptics.selection();
-          return next;
-      });
+            safeStorage.setItem('hidden_tabs', JSON.stringify(next));
+            Haptics.selectionStart();
+            return next;
+        });
   };
 
   const toggleAutoUpdate = async () => {
       const newState = !autoUpdateEnabled;
-      setAutoUpdateEnabled(newState);
-      safeStorage.setItem('auto_update_enabled', String(newState));
-      Haptics.selection();
-      if (newState) { await requestPermissions(); checkForUpdates(); }
+        setAutoUpdateEnabled(newState);
+        safeStorage.setItem('auto_update_enabled', String(newState));
+        Haptics.selectionStart();
+        if (newState) { await requestPermissions(); checkForUpdates(); }
   };
 
   const toggleWifiOnly = () => {
-      setWifiOnly(!wifiOnly);
-      safeStorage.setItem('wifi_only', String(!wifiOnly));
-      Haptics.selection();
-  };
+        setWifiOnly(!wifiOnly);
+        safeStorage.setItem('wifi_only', String(!wifiOnly));
+        Haptics.selectionStart();
+    };
 
   const toggleDeleteApk = async () => {
       const newState = !deleteApk;
-      if (newState) await requestPermissions();
-      setDeleteApk(newState);
-      safeStorage.setItem('delete_apk', String(newState));
-      Haptics.selection();
-  };
+        if (newState) await requestPermissions();
+        setDeleteApk(newState);
+        safeStorage.setItem('delete_apk', String(newState));
+        Haptics.selectionStart();
+    };
 
   const toggleDisableAnimations = () => {
-      setDisableAnimations(!disableAnimations);
-      safeStorage.setItem('disable_anim', String(!disableAnimations));
-      Haptics.selection();
-  };
+        setDisableAnimations(!disableAnimations);
+        safeStorage.setItem('disable_anim', String(!disableAnimations));
+        Haptics.selectionStart();
+    };
 
   const toggleCompactMode = () => {
-      setCompactMode(!compactMode);
-      safeStorage.setItem('compact_mode', String(!compactMode));
-      Haptics.selection();
-  };
+        setCompactMode(!compactMode);
+        safeStorage.setItem('compact_mode', String(!compactMode));
+        Haptics.selectionStart();
+    };
 
   const toggleHighRefreshRate = () => {
-      const newState = !highRefreshRate;
-      setHighRefreshRate(newState);
-      safeStorage.setItem('high_refresh_rate', String(newState));
-      Haptics.selection();
-  };
+        const newState = !highRefreshRate;
+        setHighRefreshRate(newState);
+        safeStorage.setItem('high_refresh_rate', String(newState));
+        Haptics.selectionStart();
+    };
 
   const toggleTab = (tab: Tab) => {
       if (tab !== 'about' && hiddenTabs.includes(tab)) return;
@@ -583,17 +616,18 @@ const App: React.FC = () => {
       safeStorage.setItem('active_native_downloads', JSON.stringify(activeDownloads));
   }, [activeDownloads]);
 
-  const handleDownloadStart = useCallback((appId: string, downloadId: string, fileName: string) => {
-      const compositeValue = `${downloadId}|${fileName}`;
-      setActiveDownloads(prev => ({ ...prev, [appId]: compositeValue }));
-      setReadyToInstall(prev => { 
-          if (!prev[appId]) return prev;
-          const n = {...prev}; delete n[appId]; 
-          safeStorage.setItem('ready_to_install', JSON.stringify(n));
-          return n; 
-      });
-      Haptics.impact({ style: ImpactStyle.Medium });
-  }, []);
+   const handleDownloadStart = useCallback((appId: string, downloadId: string, fileName: string) => {
+       const compositeValue = `${downloadId}|${fileName}`;
+       setActiveDownloads(prev => ({ ...prev, [appId]: compositeValue }));
+       setUserAccount(curr => ({ ...curr, downloadCount: curr.downloadCount + 1 }));
+       setReadyToInstall(prev => { 
+           if (!prev[appId]) return prev;
+           const n = {...prev}; delete n[appId]; 
+           safeStorage.setItem('ready_to_install', JSON.stringify(n));
+           return n; 
+       });
+       Haptics.impact({ style: ImpactStyle.Medium });
+   }, []);
 
   const handleCancelDownload = useCallback(async (app: AppItem, compositeId: string) => {
       const [dlId] = compositeId.split('|');
@@ -676,6 +710,27 @@ const App: React.FC = () => {
           setSelectedApp(app);
           return;
       }
+       if (!userAccount.isActivated) {
+           setShowActivationModal(true);
+           Haptics.notification({ type: NotificationType.Warning });
+           return;
+       }
+
+       // --- ENFORCE TIERED LIMITS ---
+       const limits: Record<PackageTier, number> = {
+           [PackageTier.STARTER]: 10,
+           [PackageTier.PRO]: 100,
+           [PackageTier.ELITE]: Infinity,
+           [PackageTier.NONE]: 0
+       };
+
+       if (userAccount.downloadCount >= limits[userAccount.tier]) {
+           setErrorMsg(`Download Limit Reached! Your ${userAccount.tier} plan supports up to ${limits[userAccount.tier]} apps. Upgrade to Pro or Elite for more.`);
+           setShowErrorToast(true);
+           Haptics.notification({ type: NotificationType.Error });
+           return;
+       }
+
       const targetUrl = url || app.variants?.[0]?.url || app.downloadUrl;
       if (!targetUrl || targetUrl === '#') return;
       if (wifiOnly && !isWifiConnected()) {
@@ -872,18 +927,14 @@ const App: React.FC = () => {
 
   const handleDismissAnnouncement = () => {
       if (remoteConfig?.announcement) {
-          const hash = getStringHash(remoteConfig.announcement);
-          safeStorage.setItem('dismissed_announcement_hash', String(hash));
-          setIsAnnouncementDismissed(true);
-          Haptics.selection();
-      }
+            const hash = getStringHash(remoteConfig.announcement);
+            safeStorage.setItem('dismissed_announcement_hash', String(hash));
+            setIsAnnouncementDismissed(true);
+            Haptics.selectionStart();
+        }
   };
 
-  const handleTestUpdateModal = () => {
-      setIsTestingUpdate(true);
-      setShowStoreUpdateModal(true);
-      Haptics.impact({ style: ImpactStyle.Medium });
-  };
+
 
   const showDevToast = (msg: string) => {
       if (devToastTimer.current) clearTimeout(devToastTimer.current);
@@ -971,16 +1022,7 @@ const App: React.FC = () => {
             }
             if (configData) {
                 if(isMounted.current) setRemoteConfig(configData);
-                if (configData.latestStoreVersion && compareVersions(configData.latestStoreVersion, CURRENT_STORE_VERSION) > 0) {
-                    if(isMounted.current) { 
-                        setStoreUpdateAvailable(true); 
-                        setStoreUpdateUrl(configData.storeDownloadUrl!); 
-                        if (!sessionStorage.getItem('store_update_notified')) {
-                            setShowStoreUpdateModal(true);
-                            sessionStorage.setItem('store_update_notified', 'true');
-                        }
-                    }
-                }
+
                 if (configData.appsJsonUrl) activeAppsUrl = configData.appsJsonUrl;
                 if (configData.mirrorJsonUrl) activeMirrorUrl = configData.mirrorJsonUrl;
             }
@@ -998,7 +1040,7 @@ const App: React.FC = () => {
                  const mirrorReq = await fetchWithRetry(`${activeMirrorUrl}${appsTs}`, {}, 1);
                  if (mirrorReq.ok) { 
                     mirrorData = await mirrorReq.json(); 
-                    if(isMounted.current) setMirrorSource('Remote (GitHub)'); 
+                    if(isMounted.current) setMirrorSource('Remote Server'); 
                  }
             } catch (e) { 
                 try {
@@ -1153,8 +1195,13 @@ const App: React.FC = () => {
 
   const renderAppGrid = (platform: Platform) => {
     const platformApps = visibleApps.filter(a => a.platform === platform);
+    
+    // Logic for featured apps: just take the first few that match the platform and are not being filtered by search/category
+    const featuredApps = platformApps.slice(0, 3);
+    const remainingApps = platformApps.slice(3);
+
     return (
-      <div className="px-6">
+      <div className="px-6 space-y-6">
         <StoreFilters 
           searchQuery={searchQuery} setSearchQuery={setSearchQuery}
           selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
@@ -1165,29 +1212,69 @@ const App: React.FC = () => {
           onAddApp={() => setShowSubmissionModal(true)} submissionCooldown={submissionCooldown}
           count={appCounts[platform.toLowerCase() as keyof typeof appCounts]}
         />
+
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-            {[...Array(6)].map((_, i) => ( <div key={i} className="h-24 bg-theme-element animate-pulse rounded-3xl" /> ))}
+            {[...Array(6)].map((_, i) => ( <div key={i} className="h-24 bg-theme-element animate-pulse rounded-[2rem]" /> ))}
           </div>
         ) : platformApps.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-theme-sub animate-fade-in">
-             <i className="fas fa-search text-5xl mb-4 opacity-10"></i>
-             <p className="font-bold text-lg">No {platform} apps found</p>
+          <div className="flex flex-col items-center justify-center py-32 text-theme-sub animate-fade-in text-center px-10">
+             <div className="w-24 h-24 bg-theme-element rounded-[3rem] flex items-center justify-center mb-6 opacity-40">
+                <i className="fas fa-search text-4xl"></i>
+             </div>
+             <p className="font-black text-2xl text-theme-text tracking-tighter mb-2">No results found</p>
+             <p className="text-sm font-medium opacity-60 max-w-xs">We couldn't find any {platform} apps matching your criteria. Try adjusting your search or category filters.</p>
+             <button onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }} className="mt-8 px-6 py-3 bg-theme-element text-primary font-black text-xs uppercase tracking-widest rounded-2xl border border-theme-border hover:border-primary/50 transition-all">Clear Filters</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-            {platformApps.map(app => (
-              <AppCard 
-                key={app.id} 
-                app={app} 
-                onClick={handleAppClick} 
-                localVersion={installedVersions[app.id]}
-                hasUpdateNotification={!!installedVersions[app.id] && installedVersions[app.id] !== "Installed" && compareVersions(app.latestVersion, installedVersions[app.id]) > 0}
-                downloadProgress={downloadProgressMap[app.id]} 
-                downloadStatus={downloadStatusMap[app.id]} 
-                isReadyToInstall={!!readyToInstall[app.id]}
-              />
-            ))}
+          <div className="space-y-8 pb-10">
+            {/* Featured Section - Only show when not searching or filtering by category */}
+            {searchQuery === '' && selectedCategory === 'All' && featuredApps.length > 0 && (
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-black text-theme-text tracking-tighter">Featured {platform}</h2>
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded-md">Editor's Choice</span>
+                    </div>
+                    <div className="flex overflow-x-auto gap-4 -mx-6 px-6 pb-4 no-scrollbar snap-x">
+                        {featuredApps.map(app => (
+                            <div key={app.id} className="min-w-[280px] md:min-w-[320px] snap-center">
+                                <AppCard 
+                                    app={app} 
+                                    onClick={handleAppClick} 
+                                    localVersion={installedVersions[app.id]}
+                                    hasUpdateNotification={!!installedVersions[app.id] && installedVersions[app.id] !== "Installed" && compareVersions(app.latestVersion, installedVersions[app.id]) > 0}
+                                    downloadProgress={downloadProgressMap[app.id]} 
+                                    downloadStatus={downloadStatusMap[app.id]} 
+                                    isReadyToInstall={!!readyToInstall[app.id]}
+                                    isActivated={userAccount.isActivated}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Main List */}
+            <div className="space-y-4">
+                {searchQuery === '' && selectedCategory === 'All' && remainingApps.length > 0 && (
+                    <h2 className="text-xl font-black text-theme-text tracking-tighter">All {platform} Apps</h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+                    {(searchQuery !== '' || selectedCategory !== 'All' ? platformApps : remainingApps).map(app => (
+                        <AppCard 
+                            key={app.id} 
+                            app={app} 
+                            onClick={handleAppClick} 
+                            localVersion={installedVersions[app.id]}
+                            hasUpdateNotification={!!installedVersions[app.id] && installedVersions[app.id] !== "Installed" && compareVersions(app.latestVersion, installedVersions[app.id]) > 0}
+                            downloadProgress={downloadProgressMap[app.id]} 
+                            downloadStatus={downloadStatusMap[app.id]} 
+                            isReadyToInstall={!!readyToInstall[app.id]}
+                            isActivated={userAccount.isActivated}
+                        />
+                    ))}
+                </div>
+            </div>
           </div>
         )}
       </div>
@@ -1213,7 +1300,7 @@ const App: React.FC = () => {
         <div className="min-h-screen bg-surface text-theme-text transition-colors duration-300 font-sans flex flex-col items-center justify-center p-6 text-center animate-fade-in relative overflow-hidden">
             <h1 className="text-4xl font-black text-theme-text mb-4 tracking-tighter relative z-10">System Offline</h1>
             <p className="text-theme-sub text-lg font-medium max-w-sm leading-relaxed mb-10 relative z-10">
-                {remoteConfig.maintenanceMessage || "Orion Store is currently undergoing scheduled maintenance."}
+                {remoteConfig.maintenanceMessage || "Pretub Store is currently undergoing scheduled maintenance."}
             </p>
         </div>
       );
@@ -1263,15 +1350,41 @@ const App: React.FC = () => {
             <div className="bg-primary/95 backdrop-blur-xl text-white p-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-white/20">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0"> <i className="fas fa-sync-alt animate-spin text-lg"></i> </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black leading-tight">Orion Auto-Update</p>
+                    <p className="text-sm font-black leading-tight">Pretub Auto-Update</p>
                     <p className="text-[10px] opacity-80 font-medium">Updating {autoUpdateBanner.count} apps in background...</p>
                 </div>
                 <button onClick={() => setAutoUpdateBanner({ ...autoUpdateBanner, visible: false })} className="text-white/60 hover:text-white"><i className="fas fa-times"></i></button>
             </div>
         </div>
       )}
-      <Header onTitleClick={handleHeaderClick} storeUpdateAvailable={storeUpdateAvailable} onUpdateStore={() => setShowStoreUpdateModal(true)} theme={theme} toggleTheme={toggleTheme} activeTab={activeTab} onOpenSettings={() => setShowSettingsModal(true)} updateCount={updateCount} activeDownloadCount={Object.keys(activeDownloads).length} />
+      <Header onTitleClick={handleHeaderClick} theme={theme} toggleTheme={toggleTheme} activeTab={activeTab} onOpenSettings={() => setShowSettingsModal(true)} updateCount={updateCount} activeDownloadCount={Object.keys(activeDownloads).length} userAccount={userAccount} />
       
+      {!userAccount.isActivated && activeTab !== 'pricing' && (
+        <div className="px-6 mb-4 animate-fade-in max-w-7xl mx-auto w-full">
+            <div 
+                onClick={() => setActiveTab('pricing')}
+                className="group relative overflow-hidden bg-gradient-to-r from-orange-500 to-amber-500 p-4 rounded-[2rem] shadow-xl shadow-orange-500/20 cursor-pointer hover:scale-[1.01] active:scale-95 transition-all"
+            >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl">
+                            <i className="fas fa-unlock-alt animate-bounce"></i>
+                        </div>
+                        <div className="text-left">
+                            <p className="text-white font-black text-sm">Action Required: Activate Pretub Store</p>
+                            <p className="text-white/80 text-[10px] font-bold uppercase tracking-wider">Unlock lifetime downloads & premium categories</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl text-white font-black text-xs">
+                        <span>Activate</span>
+                        <i className="fas fa-arrow-right text-[10px]"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+
       {remoteConfig?.announcement && !isAnnouncementDismissed && activeTab !== 'about' && (
         <div className="px-6 mb-2 animate-fade-in max-w-7xl mx-auto w-full">
             <div className={`relative group overflow-hidden border-2 border-blue-500/40 rounded-[2rem] p-4 flex items-center gap-4 shadow-lg shadow-blue-500/5 group ${theme === 'light' ? 'bg-blue-600/10' : 'bg-blue-600/15'}`}>
@@ -1296,12 +1409,63 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto w-full pb-28 min-h-[50vh]">
         <div key={activeTab} className="animate-tab-enter">
+
             {activeTab === 'android' && renderAppGrid(Platform.ANDROID)}
             {activeTab === 'pc' && renderAppGrid(Platform.PC)}
             {activeTab === 'tv' && renderAppGrid(Platform.TV)}
+            {activeTab === 'pricing' && (
+                <PricingView 
+                    userAccount={userAccount} 
+                    onActivate={handleActivate} 
+                    theme={theme} 
+                />
+            )}
             {activeTab === 'about' && (
                 <Suspense fallback={<div className="flex justify-center p-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
-                    <AboutView devProfile={devProfile} socialLinks={socialLinks} faqs={faqs} isLegend={isLegend} isContributor={isContributor} adWatchCount={adWatchCount} profileImgError={profileImgError} setProfileImgError={setProfileImgError} handleProfileClick={() => { setEasterEggCount(e => e + 1); if(easterEggCount >= 7) { window.open(easterEggUrl); setEasterEggCount(0); setIsLegend(true); safeStorage.setItem('isLegend', 'true'); Haptics.notification({ type: NotificationType.Success }); } }} setShowFAQ={setShowFAQ} onOpenAdDonation={() => setShowAdDonation(true)} isDevUnlocked={isDevUnlocked} useRemoteJson={useRemoteJson} toggleSourceMode={() => { setUseRemoteJson(!useRemoteJson); Haptics.selection(); }} githubToken={githubToken} isEditingToken={isEditingToken} setIsEditingToken={setIsEditingToken} saveGithubToken={saveGithubToken} currentStoreVersion={CURRENT_STORE_VERSION} onWipeCache={() => { localStorage.clear(); window.location.reload(); }} onTestStoreUpdate={handleTestUpdateModal} mirrorSource={mirrorSource} hiddenTabs={hiddenTabs} toggleHiddenTab={toggleHiddenTab} autoUpdateEnabled={autoUpdateEnabled} toggleAutoUpdate={toggleAutoUpdate} availableUpdates={availableUpdates} onTriggerUpdate={() => {}} />
+                    <AboutView 
+                        devProfile={devProfile} 
+                        socialLinks={socialLinks} 
+                        faqs={faqs} 
+                        isLegend={isLegend} 
+                        isContributor={isContributor} 
+                        adWatchCount={adWatchCount} 
+                        profileImgError={profileImgError} 
+                        setProfileImgError={setProfileImgError} 
+                        handleProfileClick={() => { 
+                            setEasterEggCount(e => e + 1); 
+                            if(easterEggCount >= 7) { 
+                                window.open(easterEggUrl); 
+                                setEasterEggCount(0); 
+                                setIsLegend(true); 
+                                safeStorage.setItem('isLegend', 'true'); 
+                                Haptics.notification({ type: NotificationType.Success }); 
+                            } 
+                        }} 
+                        setShowFAQ={setShowFAQ} 
+                        onOpenAdDonation={() => setShowAdDonation(true)} 
+                        isDevUnlocked={isDevUnlocked} 
+                        useRemoteJson={useRemoteJson} 
+                        toggleSourceMode={() => { 
+                            setUseRemoteJson(!useRemoteJson); 
+                            Haptics.selectionStart(); 
+                        }} 
+                        githubToken={githubToken} 
+                        isEditingToken={isEditingToken} 
+                        setIsEditingToken={setIsEditingToken} 
+                        saveGithubToken={saveGithubToken} 
+                        currentStoreVersion={CURRENT_STORE_VERSION} 
+                        onWipeCache={() => { 
+                            localStorage.clear(); 
+                            window.location.reload(); 
+                        }} 
+                        mirrorSource={mirrorSource} 
+                        hiddenTabs={hiddenTabs} 
+                        toggleHiddenTab={toggleHiddenTab} 
+                        autoUpdateEnabled={autoUpdateEnabled} 
+                        toggleAutoUpdate={toggleAutoUpdate} 
+                        availableUpdates={availableUpdates} 
+                        onTriggerUpdate={() => {}} 
+                    />
                 </Suspense>
             )}
         </div>
@@ -1335,6 +1499,7 @@ const App: React.FC = () => {
                   onCancelDownload={(app, dlId) => handleCancelDownload(app, dlId)}
                   onNavigateToApp={handleNavigateToApp}
                   onDeleteReadyFile={handleDeleteReadyFile}
+                  isActivated={userAccount.isActivated}
               />
           )}
           {showFAQ && <FAQModal onClose={() => setShowFAQ(false)} items={faqs} />}
@@ -1359,14 +1524,15 @@ const App: React.FC = () => {
           {showSubmissionModal && <SubmissionModal onClose={() => setShowSubmissionModal(false)} currentStoreVersion={CURRENT_STORE_VERSION} onSuccess={handleSubmissionSuccess} submissionCount={submissionCount} activeTab={activeTab} />}
           {showAdDonation && <AdDonationModal onClose={() => setShowAdDonation(false)} onSuccess={handleAdWatched} currentStreak={adWatchCount} />}
           
-          {showStoreUpdateModal && (isTestingUpdate || (remoteConfig?.latestStoreVersion)) && (
-              <StoreUpdateModal 
-                currentVersion={CURRENT_STORE_VERSION} 
-                newVersion={isTestingUpdate ? "9.9.9" : (remoteConfig?.latestStoreVersion || "Unknown")} 
-                downloadUrl={isTestingUpdate ? "#" : storeUpdateUrl} 
-                onClose={() => { setShowStoreUpdateModal(false); setIsTestingUpdate(false); }} 
+          {showActivationModal && (
+              <ActivationModal 
+                  onClose={() => setShowActivationModal(false)}
+                  onGoToPricing={() => { setShowActivationModal(false); setSelectedApp(null); setActiveTab('pricing'); }}
+                  onActivate={handleActivate}
               />
           )}
+
+
       </Suspense>
     </div>
   );

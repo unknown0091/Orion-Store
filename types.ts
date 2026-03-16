@@ -10,7 +10,8 @@ export enum AppCategory {
 
 export enum Platform {
   ANDROID = 'Android',
-  PC = 'PC'
+  PC = 'PC',
+  TV = 'TV'
 }
 
 export interface AppVariant {
@@ -40,7 +41,7 @@ export interface AppItem {
 }
 
 export interface SocialLinks {
-  github: string;
+  github?: string;
   x: string;
   discord: string;
   coffee: string;
@@ -77,4 +78,44 @@ export interface StoreConfig {
   easterEggUrl?: string;
 }
 
-export type Tab = 'android' | 'pc' | 'about';
+export type Tab = 'android' | 'pc' | 'tv' | 'about' | 'pricing';
+
+export enum PackageTier {
+  STARTER = 'Starter',
+  PRO = 'Pro',
+  ELITE = 'Elite',
+  NONE = 'None'
+}
+
+export interface StorePackage {
+  id: string;
+  tier: PackageTier;
+  price: string;
+  sellPrice?: string;
+  discount?: string;
+  name: string;
+  description: string;
+  features: string[];
+  recommended?: boolean;
+  checkoutUrl: string;
+}
+
+export interface UserAccount {
+  isActivated: boolean;
+  tier: PackageTier;
+  activatedOn?: string;
+  licenseKey?: string;
+  downloadCount: number;
+  totalSavingsMb: number; // For the "Storage Saved" dashboard stat
+  lastDownloadAt?: string;
+}
+
+export enum SortOption {
+  NEWEST = 'Newest',
+  NAME_ASC = 'Name (A-Z)',
+  NAME_DESC = 'Name (Z-A)',
+  SIZE_ASC = 'Size (Smallest)',
+  SIZE_DESC = 'Size (Largest)'
+}
+
+

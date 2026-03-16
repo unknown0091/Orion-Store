@@ -25,7 +25,7 @@ interface AboutViewProps {
   saveGithubToken: (token: string) => void;
   currentStoreVersion: string;
   onWipeCache: () => void;
-  onTestStoreUpdate: () => void;
+
   mirrorSource: string;
   // Props kept for compatibility
   hiddenTabs: string[];
@@ -70,7 +70,7 @@ const AboutView: React.FC<AboutViewProps> = ({
   saveGithubToken,
   currentStoreVersion,
   onWipeCache,
-  onTestStoreUpdate,
+
   mirrorSource
 }) => {
   // Badge Logic
@@ -288,10 +288,7 @@ const AboutView: React.FC<AboutViewProps> = ({
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
-                        <a href={socialLinks.github} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-3 p-4 bg-card border border-theme-border rounded-2xl hover:scale-[1.02] transition-all cursor-pointer group shadow-sm">
-                            <i className="fab fa-github text-2xl text-theme-text"></i>
-                            <span className="font-bold text-theme-text">GitHub</span>
-                        </a>
+                        {/* GitHub Hidden */}
                         
                         <a href={socialLinks.x} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-3 p-4 bg-theme-text text-surface rounded-2xl hover:scale-[1.02] transition-all cursor-pointer shadow-lg shadow-black/10 group border border-theme-border">
                             <div className="w-6 h-6 flex items-center justify-center">
@@ -396,15 +393,15 @@ const AboutView: React.FC<AboutViewProps> = ({
                         <div className="flex justify-between items-start mb-2">
                             <div>
                                 <h3 className="font-bold text-theme-text text-sm flex items-center gap-2">
-                                    <i className="fab fa-github"></i> GitHub Access
+                                    <i className="fas fa-key"></i> API Credentials
                                 </h3>
-                                <p className="text-xs text-theme-sub mt-1">Unlock 5000 requests/hr (Authenticated)</p>
+                                <p className="text-xs text-theme-sub mt-1">Unlock higher request limits (Authenticated)</p>
                             </div>
                             <button onClick={() => setIsEditingToken(!isEditingToken)} className="text-xs text-primary font-bold hover:underline">
                                 {isEditingToken ? 'Cancel' : 'Edit Token'}
                             </button>
                         </div>
-                        
+
                         {isEditingToken ? (
                             <div className="flex gap-2 mt-3">
                                 <input 
@@ -446,7 +443,7 @@ const AboutView: React.FC<AboutViewProps> = ({
                          {rateLimit && (
                              <div className="space-y-2">
                                  <div className="flex justify-between items-center">
-                                     <span className="text-[10px] font-bold text-theme-sub uppercase tracking-wider">GitHub API Quota</span>
+                                     <span className="text-[10px] font-bold text-theme-sub uppercase tracking-wider">API Quota</span>
                                      <span className="text-[10px] font-mono text-theme-text">{rateLimit.remaining}/{rateLimit.limit}</span>
                                  </div>
                                  <div className="w-full h-1.5 bg-theme-element rounded-full overflow-hidden">
@@ -537,12 +534,7 @@ const AboutView: React.FC<AboutViewProps> = ({
                             >
                                 {useRemoteJson ? "Remote Mode" : "Local Mode"}
                             </button>
-                            <button 
-                                onClick={onTestStoreUpdate}
-                                className="px-4 py-2 rounded-xl text-xs font-bold bg-theme-element text-theme-sub border border-theme-border hover:text-primary"
-                            >
-                                Test Update UI
-                            </button>
+
                          </div>
                     </div>
 

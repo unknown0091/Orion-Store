@@ -522,20 +522,11 @@ ${jsonPayload}
                                     <input 
                                         type="text"
                                         className="w-full bg-theme-input border border-theme-border rounded-xl px-3 py-3 text-sm focus:border-primary outline-none"
-                                        placeholder="https://gitlab.com/owner/repo"
+                                        placeholder="https://app-source-link.com"
                                         value={formData.repoUrl}
                                         onChange={(e) => handleInputChange('repoUrl', e.target.value)}
                                     />
-                                    {formData.githubRepo && (
-                                        <p className="text-[10px] text-green-500 mt-1 font-mono flex items-center gap-1">
-                                            <i className="fab fa-github"></i> GitHub: {formData.githubRepo}
-                                        </p>
-                                    )}
-                                    {formData.gitlabRepo && (
-                                        <p className="text-[10px] text-orange-500 mt-1 font-mono flex items-center gap-1">
-                                            <i className="fab fa-gitlab"></i> GitLab: {formData.gitlabRepo}
-                                        </p>
-                                    )}
+                                    {/* Repo Path Hidden */}
                                 </>
                             ) : (
                                 <>
@@ -644,7 +635,7 @@ ${jsonPayload}
                     <span>Generate Request</span>
                 </button>
                 <p className="text-[10px] text-center text-theme-sub opacity-60">
-                    This will open a pre-filled GitHub issue.
+                    This will generate a pre-filled support request for review.
                 </p>
             </div>
         </div>

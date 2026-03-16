@@ -14,6 +14,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, hiddenTab
        {/* Optimized: Reduced blur to lg (16px) or less, used darker bg opacity to compensate */}
        <nav className="bg-surface/95 backdrop-blur-lg border border-theme-border p-2 rounded-[2rem] shadow-2xl flex items-center gap-1 animate-slide-up pointer-events-auto transform translate-z-0">
          
+
          {!hiddenTabs.includes('android') && (
              <button 
                 onClick={() => onTabChange('android')}
@@ -45,12 +46,20 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, hiddenTab
          )}
 
          <button 
+            onClick={() => onTabChange('pricing')}
+            className={`px-5 py-3 rounded-[1.5rem] font-bold transition-all duration-200 flex items-center gap-2 ${activeTab === 'pricing' ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'text-theme-sub hover:bg-theme-element'}`}
+         >
+            <i className="fas fa-gem text-lg"></i>
+            {activeTab === 'pricing' && <span className="animate-fade-in text-sm ml-2">Plans</span>}
+         </button>
+{/* 
+         <button 
             onClick={() => onTabChange('about')}
             className={`px-6 py-3 rounded-[1.5rem] font-bold transition-all duration-200 flex items-center gap-2 ${activeTab === 'about' ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'text-theme-sub hover:bg-theme-element'}`}
          >
             <i className="fas fa-code text-lg"></i>
             {activeTab === 'about' && <span className="animate-fade-in text-sm">Dev</span>}
-         </button>
+         </button> */}
       </nav>
     </div>
   );

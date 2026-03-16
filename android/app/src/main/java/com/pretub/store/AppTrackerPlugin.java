@@ -1,4 +1,4 @@
-package com.orion.store;
+package com.pretub.store;
 
 import android.Manifest;
 import android.content.Context;
@@ -72,7 +72,7 @@ public class AppTrackerPlugin extends Plugin {
         // 10. Background Power Lock
         if (wakeLock == null) {
             PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Orion:DownloadLock");
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Pretub:DownloadLock");
         }
         if (!wakeLock.isHeld()) wakeLock.acquire(15 * 60 * 1000L); // 15m limit
 

@@ -53,7 +53,7 @@ const StoreFilters: React.FC<StoreFiltersProps> = ({
   }, []);
 
   return (
-    <div className="animate-fade-in relative z-20 space-y-3 mb-6">
+    <div className="animate-fade-in relative z-20 space-y-4 mb-6">
       {/* Search Bar Row */}
       <div className="relative z-10 flex gap-2">
         <div className="relative flex-1 group">
@@ -106,54 +106,35 @@ const StoreFilters: React.FC<StoreFiltersProps> = ({
         </div>
       </div>
 
-      {/* Grid Filter Row - Updated to Flex to include Count Badge */}
-      <div className="flex gap-2 relative z-10">
-        
-        {/* Category Dropdown */}
-        <div id="category-dropdown" className="relative flex-1 min-w-0">
-          <button
-            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-            className={`w-full flex justify-between items-center h-12 px-4 bg-card border rounded-2xl font-bold text-xs transition-all shadow-sm ${isCategoryDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-theme-border hover:border-theme-sub'}`}
-          >
-            <div className="flex items-center gap-2 truncate">
-                <i className="fas fa-filter text-primary text-[10px]"></i>
-                <span className="truncate text-theme-text">{selectedCategory}</span>
-            </div>
-            <i className={`fas fa-chevron-${isCategoryDropdownOpen ? 'up' : 'down'} text-[8px] transition-transform opacity-40 ml-1 shrink-0`}></i>
-          </button>
-
-          {isCategoryDropdownOpen && (
-            <ul className="absolute mt-2 w-full bg-card rounded-2xl shadow-2xl border border-theme-border max-h-64 overflow-y-auto z-[60] animate-fade-in no-scrollbar">
-              {categories.map((category) => (
-                <li
-                  key={category}
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    setIsCategoryDropdownOpen(false);
-                  }}
-                  className={`px-4 py-3.5 cursor-pointer transition-colors text-xs flex items-center justify-between first:rounded-t-2xl last:rounded-b-2xl ${
-                    selectedCategory === category 
-                      ? 'font-black text-primary bg-primary/5' 
-                      : 'text-theme-text font-medium hover:bg-theme-element'
-                  }`}
-                >
-                  <span>{category}</span>
-                  {selectedCategory === category && <i className="fas fa-check text-[8px]"></i>}
-                </li>
-              ))}
-            </ul>
-          )}
+      {/* Horizontal Category Chips */}
+      <div className="relative z-10 -mx-6 px-6">
+        <div className="flex overflow-x-auto gap-2 no-scrollbar pb-1 snap-x">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`shrink-0 px-4 py-2.5 rounded-xl font-bold text-xs transition-all snap-start border active:scale-95 ${
+                selectedCategory === category 
+                  ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
+                  : 'bg-card text-theme-text border-theme-border hover:border-theme-sub'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Sort Dropdown */}
-        <div id="sort-dropdown" className="relative flex-1 min-w-0">
+      {/* Sort & Stats Row */}
+      <div className="flex items-center justify-between relative z-10">
+        <div id="sort-dropdown" className="relative w-40">
           <button
             onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-            className={`w-full flex justify-between items-center h-12 px-4 bg-card border rounded-2xl font-bold text-xs transition-all shadow-sm ${isSortDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-theme-border hover:border-theme-sub'}`}
+            className={`w-full flex justify-between items-center h-10 px-3 bg-card border rounded-xl font-bold text-[10px] transition-all shadow-sm ${isSortDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-theme-border hover:border-theme-sub'}`}
           >
-            <div className="flex items-center gap-2 truncate">
-                <i className="fas fa-sort-amount-down text-primary text-[10px]"></i>
-                <span className="truncate text-theme-text">{selectedSort}</span>
+            <div className="flex items-center gap-2 truncate text-theme-sub uppercase tracking-wider">
+                <i className="fas fa-sort-amount-down text-primary"></i>
+                <span className="truncate">{selectedSort}</span>
             </div>
             <i className={`fas fa-chevron-${isSortDropdownOpen ? 'up' : 'down'} text-[8px] transition-transform opacity-40 ml-1 shrink-0`}></i>
           </button>
@@ -167,7 +148,7 @@ const StoreFilters: React.FC<StoreFiltersProps> = ({
                     setSelectedSort(option);
                     setIsSortDropdownOpen(false);
                   }}
-                  className={`px-4 py-3.5 cursor-pointer transition-colors text-xs flex items-center justify-between first:rounded-t-2xl last:rounded-b-2xl ${
+                  className={`px-4 py-3 cursor-pointer transition-colors text-[11px] flex items-center justify-between first:rounded-t-2xl last:rounded-b-2xl ${
                     selectedSort === option 
                       ? 'font-black text-primary bg-primary/5' 
                       : 'text-theme-text font-medium hover:bg-theme-element'
@@ -181,9 +162,11 @@ const StoreFilters: React.FC<StoreFiltersProps> = ({
           )}
         </div>
 
-        {/* Total App Count Badge */}
-        <div className="shrink-0 h-12 min-w-[3rem] px-3 bg-card border border-theme-border rounded-2xl flex items-center justify-center shadow-sm" title="Total Apps">
-            <span className="font-black text-primary text-xs">{count || 0}</span>
+        <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black text-theme-sub uppercase tracking-widest opacity-60">Library Size</span>
+            <div className="h-10 min-w-[3rem] px-3 bg-card border border-theme-border rounded-xl flex items-center justify-center shadow-sm" title="Total Apps">
+                <span className="font-black text-primary text-sm">{count || 0}</span>
+            </div>
         </div>
       </div>
     </div>
