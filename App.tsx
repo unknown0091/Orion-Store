@@ -15,7 +15,7 @@ import AppTracker from './plugins/AppTracker';
 import { STORE_PACKAGES } from './constants';
 import PricingView from './components/PricingView';
 import ActivationModal from './components/ActivationModal';
-import DashboardView from './components/DashboardView';
+
 
 // --- LAZY LOAD HEAVY COMPONENTS ---
 const AppDetail = lazy(() => import('./components/AppDetail'));
@@ -24,7 +24,7 @@ const AdDonationModal = lazy(() => import('./components/AdDonationModal'));
 const AboutView = lazy(() => import('./components/AboutView'));
 const SubmissionModal = lazy(() => import('./components/SubmissionModal'));
 const SettingsModal = lazy(() => import('./components/SettingsModal'));
-const StoreUpdateModal = lazy(() => import('./components/StoreUpdateModal'));
+
 
 // APP CONSTANTS
 const CURRENT_STORE_VERSION = '1.0.8'; 
@@ -167,7 +167,7 @@ const fetchWithRetry = async (url: string, options: any, retries = 3, backoff = 
 };
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [activeTab, setActiveTab] = useState<Tab>('android');
   const [selectedApp, setSelectedApp] = useState<AppItem | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
@@ -227,10 +227,7 @@ const App: React.FC = () => {
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [submissionCooldown, setSubmissionCooldown] = useState<string | null>(null);
   const [submissionCount, setSubmissionCount] = useState(() => parseInt(safeStorage.getItem('submission_count') || '0'));
-  const [storeUpdateAvailable, setStoreUpdateAvailable] = useState(false);
-  const [showStoreUpdateModal, setShowStoreUpdateModal] = useState(false);
-  const [isTestingUpdate, setIsTestingUpdate] = useState(false);
-  const [storeUpdateUrl, setStoreUpdateUrl] = useState('');
+
   const [isDevUnlocked, setIsDevUnlocked] = useState(() => safeStorage.getItem('isDevUnlocked') === 'true');
   const [devClickCount, setDevClickCount] = useState(0);
   const [devToast, setDevToast] = useState<string | null>(null);
@@ -474,13 +471,13 @@ const App: React.FC = () => {
           else if (showFAQ) setShowFAQ(false);
           else if (showSubmissionModal) setShowSubmissionModal(false);
           else if (showAdDonation) setShowAdDonation(false);
-          else if (showStoreUpdateModal) setShowStoreUpdateModal(false);
+
           else if (activeTab !== 'android') setActiveTab('android');
           else CapacitorApp.exitApp();
       };
       const backListener = CapacitorApp.addListener('backButton', handleBack);
       return () => { backListener.then(h => h.remove()); };
-  }, [selectedApp, showSettingsModal, showFAQ, showSubmissionModal, showAdDonation, activeTab, showStoreUpdateModal]);
+  }, [selectedApp, showSettingsModal, showFAQ, showSubmissionModal, showAdDonation, activeTab]);
 
   useEffect(() => {
       if (!Capacitor.isNativePlatform()) return;
@@ -937,11 +934,7 @@ const App: React.FC = () => {
         }
   };
 
-  const handleTestUpdateModal = () => {
-      setIsTestingUpdate(true);
-      setShowStoreUpdateModal(true);
-      Haptics.impact({ style: ImpactStyle.Medium });
-  };
+
 
   const showDevToast = (msg: string) => {
       if (devToastTimer.current) clearTimeout(devToastTimer.current);
@@ -1029,16 +1022,7 @@ const App: React.FC = () => {
             }
             if (configData) {
                 if(isMounted.current) setRemoteConfig(configData);
-                if (configData.latestStoreVersion && compareVersions(configData.latestStoreVersion, CURRENT_STORE_VERSION) > 0) {
-                    if(isMounted.current) { 
-                        setStoreUpdateAvailable(true); 
-                        setStoreUpdateUrl(configData.storeDownloadUrl!); 
-                        if (!sessionStorage.getItem('store_update_notified')) {
-                            setShowStoreUpdateModal(true);
-                            sessionStorage.setItem('store_update_notified', 'true');
-                        }
-                    }
-                }
+
                 if (configData.appsJsonUrl) activeAppsUrl = configData.appsJsonUrl;
                 if (configData.mirrorJsonUrl) activeMirrorUrl = configData.mirrorJsonUrl;
             }
@@ -1373,7 +1357,7 @@ const App: React.FC = () => {
             </div>
         </div>
       )}
-      <Header onTitleClick={handleHeaderClick} storeUpdateAvailable={storeUpdateAvailable} onUpdateStore={() => setShowStoreUpdateModal(true)} theme={theme} toggleTheme={toggleTheme} activeTab={activeTab} onOpenSettings={() => setShowSettingsModal(true)} updateCount={updateCount} activeDownloadCount={Object.keys(activeDownloads).length} userAccount={userAccount} />
+      <Header onTitleClick={handleHeaderClick} theme={theme} toggleTheme={toggleTheme} activeTab={activeTab} onOpenSettings={() => setShowSettingsModal(true)} updateCount={updateCount} activeDownloadCount={Object.keys(activeDownloads).length} userAccount={userAccount} />
       
       {!userAccount.isActivated && activeTab !== 'pricing' && (
         <div className="px-6 mb-4 animate-fade-in max-w-7xl mx-auto w-full">
@@ -1425,16 +1409,7 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto w-full pb-28 min-h-[50vh]">
         <div key={activeTab} className="animate-tab-enter">
-            {activeTab === 'dashboard' && (
-                <DashboardView 
-                    userAccount={userAccount} 
-                    apps={apps} 
-                    onNavigateToTab={(tab) => setActiveTab(tab)}
-                    onOpenPricing={() => setActiveTab('pricing')}
-                    installedCount={Object.keys(installedVersions).length}
-                    updateCount={updateCount}
-                />
-            )}
+
             {activeTab === 'android' && renderAppGrid(Platform.ANDROID)}
             {activeTab === 'pc' && renderAppGrid(Platform.PC)}
             {activeTab === 'tv' && renderAppGrid(Platform.TV)}
@@ -1483,7 +1458,6 @@ const App: React.FC = () => {
                             localStorage.clear(); 
                             window.location.reload(); 
                         }} 
-                        onTestStoreUpdate={handleTestUpdateModal} 
                         mirrorSource={mirrorSource} 
                         hiddenTabs={hiddenTabs} 
                         toggleHiddenTab={toggleHiddenTab} 
@@ -1554,17 +1528,11 @@ const App: React.FC = () => {
               <ActivationModal 
                   onClose={() => setShowActivationModal(false)}
                   onGoToPricing={() => { setShowActivationModal(false); setSelectedApp(null); setActiveTab('pricing'); }}
+                  onActivate={handleActivate}
               />
           )}
 
-          {showStoreUpdateModal && (isTestingUpdate || (remoteConfig?.latestStoreVersion)) && (
-              <StoreUpdateModal 
-                currentVersion={CURRENT_STORE_VERSION} 
-                newVersion={isTestingUpdate ? "9.9.9" : (remoteConfig?.latestStoreVersion || "Unknown")} 
-                downloadUrl={isTestingUpdate ? "#" : storeUpdateUrl} 
-                onClose={() => { setShowStoreUpdateModal(false); setIsTestingUpdate(false); }} 
-              />
-          )}
+
       </Suspense>
     </div>
   );

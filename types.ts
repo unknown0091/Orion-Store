@@ -78,7 +78,7 @@ export interface StoreConfig {
   easterEggUrl?: string;
 }
 
-export type Tab = 'dashboard' | 'android' | 'pc' | 'tv' | 'about' | 'pricing';
+export type Tab = 'android' | 'pc' | 'tv' | 'about' | 'pricing';
 
 export enum PackageTier {
   STARTER = 'Starter',
@@ -95,6 +95,7 @@ export interface StorePackage {
   description: string;
   features: string[];
   recommended?: boolean;
+  checkoutUrl: string;
 }
 
 export interface UserAccount {

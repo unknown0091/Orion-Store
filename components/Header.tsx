@@ -4,8 +4,8 @@ import { Tab } from '../types';
 
 interface HeaderProps {
   onTitleClick: () => void;
-  storeUpdateAvailable: boolean;
-  onUpdateStore: () => void;
+
+
   theme: 'light' | 'dusk' | 'dark' | 'oled';
   toggleTheme: () => void;
   activeTab: Tab;
@@ -17,8 +17,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ 
   onTitleClick, 
-  storeUpdateAvailable, 
-  onUpdateStore, 
+ 
+ 
   theme, 
   toggleTheme,
   activeTab,
@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({
   activeDownloadCount = 0,
   userAccount = { isActivated: false, tier: 'None' }
 }) => {
-  const hasNotifications = updateCount > 0 || activeDownloadCount > 0 || storeUpdateAvailable;
+  const hasNotifications = updateCount > 0 || activeDownloadCount > 0;
 
   return (
     <header className="sticky top-0 z-30 w-full px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center bg-surface/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
@@ -60,16 +60,7 @@ const Header: React.FC<HeaderProps> = ({
         </div>
         
         <div className="flex items-center gap-3">
-            {storeUpdateAvailable && (
-                <button
-                    onClick={onUpdateStore}
-                    className="px-3 py-2 rounded-xl bg-acid/20 text-lime-700 dark:text-acid border border-acid/30 font-bold text-xs flex items-center gap-2 animate-pulse"
-                    title="Update Orion Store"
-                >
-                    <i className="fas fa-arrow-circle-up"></i>
-                    <span className="hidden sm:inline">Store Update</span>
-                </button>
-            )}
+
 
             <div className="relative">
                 <button 

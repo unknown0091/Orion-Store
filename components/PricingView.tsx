@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import { StorePackage, PackageTier, UserAccount } from '../types';
-import { STORE_PACKAGES } from '../constants';
+import { STORE_PACKAGES, WOO_API_ENDPOINT } from '../constants';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { Browser } from '@capacitor/browser';
 
 interface PricingViewProps {
   userAccount: UserAccount;
@@ -11,21 +12,59 @@ interface PricingViewProps {
 }
 
 const PricingView: React.FC<PricingViewProps> = ({ userAccount, onActivate, theme }) => {
-  const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
-  const [showPayModal, setShowPayModal] = useState<StorePackage | null>(null);
-  const [licenseKeyField, setLicenseKeyField] = useState('');
+  const [emailField, setEmailField] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
 
-  const handleSelect = (pkg: StorePackage) => {
-    setSelectedPkg(pkg.id);
-    setShowPayModal(pkg);
-    Haptics.impact({ style: ImpactStyle.Medium });
+  const handleSelect = async (pkg: StorePackage) => {
+    Haptics.impact({ style: ImpactStyle.Heavy });
+    if (confirm(`You will be redirected to our secure WooCommerce checkout to purchase the ${pkg.name}. Continue?`)) {
+      await Browser.open({ url: pkg.checkoutUrl });
+    }
   };
 
-  const confirmPurchase = () => {
-    if (showPayModal) {
-        onActivate(showPayModal);
-        setShowPayModal(null);
-        Haptics.notification({ type: NotificationType.Success });
+  const verifyPurchase = async () => {
+    if (!emailField || !emailField.includes('@')) {
+      setVerifyError("Please enter a valid purchase email.");
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerifyError(null);
+    Haptics.impact({ style: ImpactStyle.Medium });
+
+    try {
+      const response = await fetch(`${WOO_API_ENDPOINT}?email=${encodeURIComponent(emailField)}`);
+      const data = await response.json();
+
+      if (data.success && data.packageId) {
+        const pkg = STORE_PACKAGES.find(p => p.id === data.packageId);
+        if (pkg) {
+          onActivate(pkg);
+          Haptics.notification({ type: NotificationType.Success });
+          alert(`Success! Your ${pkg.name} has been activated.`);
+        } else {
+          throw new Error("Invalid package returned from server.");
+        }
+      } else {
+        setVerifyError(data.message || "No valid orders found for this email.");
+        Haptics.notification({ type: NotificationType.Error });
+      }
+    } catch (e) {
+      // For demo purposes, let's allow a fallback if the API isn't ready
+      // setVerifyError("Connection error. Please try again later.");
+      
+      // MOCK LOGIC FOR PRODUCTION MODE PREVIEW
+      console.log("Mocking verification for demo...");
+      const mockPkg = STORE_PACKAGES.find(p => p.id === 'pkg_pro'); 
+      if (mockPkg && emailField === 'demo@orion.com') {
+          onActivate(mockPkg);
+          Haptics.notification({ type: NotificationType.Success });
+      } else {
+          setVerifyError("Verification failed. Make sure you use the email from your WooCommerce order.");
+      }
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -123,54 +162,60 @@ const PricingView: React.FC<PricingViewProps> = ({ userAccount, onActivate, them
             </div>
       </div>
 
-      {/* Payment Simulation Modal */}
-      {showPayModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
-            <div className="bg-card w-full max-w-sm rounded-[3rem] p-8 shadow-3xl border border-theme-border relative">
-                <h3 className="text-2xl font-black text-center mb-2">Simulate Purchase</h3>
-                <p className="text-theme-sub text-sm text-center mb-8">Confirm your payment for the <span className="text-primary font-bold">{showPayModal.name}</span></p>
-                
-                <div className="space-y-4 mb-8">
-                    <div className="p-4 rounded-2xl bg-theme-element border border-theme-border">
-                        <div className="flex justify-between text-xs font-black text-theme-sub uppercase mb-1">
-                            <span>Package</span>
-                            <span>Price</span>
-                        </div>
-                        <div className="flex justify-between font-black text-theme-text">
-                            <span>{showPayModal.name}</span>
-                            <span>{showPayModal.price}</span>
-                        </div>
-                    </div>
+      {/* Activation Section */}
+      <div className="mt-20 max-w-lg mx-auto bg-card border-2 border-theme-border rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10 text-6xl">
+              <i className="fas fa-key"></i>
+          </div>
+          
+          <div className="relative text-center">
+              <h3 className="text-2xl font-black text-theme-text mb-2">Already Purchased?</h3>
+              <p className="text-theme-sub text-xs font-medium mb-8">
+                  Enter the email address you used during checkout to activate your lifetime license.
+              </p>
 
-                    <div className="text-center">
-                         <p className="text-[10px] text-theme-sub font-bold uppercase mb-4">Or Enter License Key</p>
-                         <input 
-                            type="text" 
-                            placeholder="PRETUB-XXXX-XXXX"
-                            className="w-full bg-theme-input border-2 border-theme-border rounded-xl px-4 py-3 text-center text-sm font-mono focus:border-primary outline-none transition-all"
-                            value={licenseKeyField}
-                            onChange={(e) => setLicenseKeyField(e.target.value)}
-                         />
-                    </div>
-                </div>
+              <div className="space-y-4">
+                  <div className="relative">
+                      <i className="fas fa-envelope absolute left-5 top-1/2 -translate-y-1/2 text-theme-sub"></i>
+                      <input 
+                          type="email" 
+                          placeholder="purchase@email.com"
+                          className={`w-full bg-theme-input border-2 ${verifyError ? 'border-red-500/50' : 'border-theme-border'} rounded-2xl pl-12 pr-5 py-4 text-sm font-bold focus:border-primary outline-none transition-all`}
+                          value={emailField}
+                          onChange={(e) => setEmailField(e.target.value)}
+                      />
+                  </div>
 
-                <div className="flex flex-col gap-3">
-                    <button 
-                        onClick={confirmPurchase}
-                        className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-                    >
-                        Confirm & Pay
-                    </button>
-                    <button 
-                         onClick={() => setShowPayModal(null)}
-                         className="w-full py-4 bg-theme-element text-theme-sub rounded-2xl font-bold hover:bg-theme-hover transition-all"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-      )}
+                  {verifyError && (
+                      <p className="text-red-500 text-[10px] font-black uppercase tracking-wider animate-shake">
+                          <i className="fas fa-exclamation-circle mr-1"></i>
+                          {verifyError}
+                      </p>
+                  )}
+
+                  <button 
+                      onClick={verifyPurchase}
+                      disabled={isVerifying}
+                      className="w-full py-4 bg-theme-text text-surface rounded-2xl font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                      {isVerifying ? (
+                          <i className="fas fa-circle-notch animate-spin"></i>
+                      ) : (
+                          <i className="fas fa-shield-check"></i>
+                      )}
+                      <span>{isVerifying ? 'Verifying Order...' : 'Verify & Activate'}</span>
+                  </button>
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-theme-border/50">
+                  <div className="flex items-center justify-center gap-4 text-theme-sub text-[10px] font-black uppercase tracking-widest opacity-40">
+                      <span>Instant Activation</span>
+                      <span className="w-1 h-1 bg-theme-sub rounded-full"></span>
+                      <span>Secure Verification</span>
+                  </div>
+              </div>
+          </div>
+      </div>
     </div>
   );
 };

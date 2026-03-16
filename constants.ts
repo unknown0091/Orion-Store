@@ -72,12 +72,18 @@ export const MICROG_INFO_URL = 'https://microg.org/';
 
 import { StorePackage, PackageTier } from './types';
 
+// Production Mode & WooCommerce Configuration
+export const WOO_BASE_URL = 'https://buy.pretub.app'; // Change to your actual WooCommerce URL
+export const WOO_CHECKOUT_URL = `${WOO_BASE_URL}/checkout/?add-to-cart=`;
+export const WOO_API_ENDPOINT = `${WOO_BASE_URL}/wp-json/orion/v1/verify-purchase`; // Custom endpoint recommended
+
 export const STORE_PACKAGES: StorePackage[] = [
   {
     id: 'pkg_starter',
     tier: PackageTier.STARTER,
     name: 'Starter Bundle',
     price: '$9.99',
+    checkoutUrl: `${WOO_CHECKOUT_URL}101`, // Replace 101 with WooCommerce Product ID
     description: 'Perfect for casual users who want a clean app store experience.',
     features: [
       'Download up to 10 Apps',
@@ -91,6 +97,7 @@ export const STORE_PACKAGES: StorePackage[] = [
     tier: PackageTier.PRO,
     name: 'Pro Collector',
     price: '$19.99',
+    checkoutUrl: `${WOO_CHECKOUT_URL}102`, // Replace 102 with WooCommerce Product ID
     description: 'Unlock premium mods and advanced developer features.',
     recommended: true,
     features: [
@@ -105,6 +112,7 @@ export const STORE_PACKAGES: StorePackage[] = [
     tier: PackageTier.ELITE,
     name: 'Elite Guardian',
     price: '$39.99',
+    checkoutUrl: `${WOO_CHECKOUT_URL}103`, // Replace 103 with WooCommerce Product ID
     description: 'The ultimate toolkit for power users. All-in-one access.',
     features: [
       'Unlimited App Downloads',

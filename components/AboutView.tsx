@@ -25,7 +25,7 @@ interface AboutViewProps {
   saveGithubToken: (token: string) => void;
   currentStoreVersion: string;
   onWipeCache: () => void;
-  onTestStoreUpdate: () => void;
+
   mirrorSource: string;
   // Props kept for compatibility
   hiddenTabs: string[];
@@ -70,7 +70,7 @@ const AboutView: React.FC<AboutViewProps> = ({
   saveGithubToken,
   currentStoreVersion,
   onWipeCache,
-  onTestStoreUpdate,
+
   mirrorSource
 }) => {
   // Badge Logic
@@ -534,12 +534,7 @@ const AboutView: React.FC<AboutViewProps> = ({
                             >
                                 {useRemoteJson ? "Remote Mode" : "Local Mode"}
                             </button>
-                            <button 
-                                onClick={onTestStoreUpdate}
-                                className="px-4 py-2 rounded-xl text-xs font-bold bg-theme-element text-theme-sub border border-theme-border hover:text-primary"
-                            >
-                                Test Update UI
-                            </button>
+
                          </div>
                     </div>
 
