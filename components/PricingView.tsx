@@ -80,6 +80,58 @@ const PricingView: React.FC<PricingViewProps> = ({ userAccount, onActivate, them
         </p>
       </div>
 
+      {/* Activation Section (Compact) */}
+      <div className="mb-12 max-w-3xl mx-auto bg-card border-2 border-theme-border rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-5 text-8xl pointer-events-none">
+              <i className="fas fa-key"></i>
+          </div>
+          
+          <div className="flex items-center gap-4 text-left z-10 w-full md:w-auto">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl shrink-0">
+                  <i className="fas fa-key"></i>
+              </div>
+              <div>
+                  <h3 className="text-lg font-black text-theme-text mb-0.5">Already Purchased?</h3>
+                  <p className="text-theme-sub text-xs font-medium">
+                      Enter your checkout email to activate.
+                  </p>
+              </div>
+          </div>
+
+          <div className="w-full md:w-auto flex-1 max-w-md z-10 flex flex-col gap-2">
+              <div className="flex w-full gap-2 relative">
+                  <div className="relative flex-1">
+                      <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-theme-sub text-sm"></i>
+                      <input 
+                          type="email" 
+                          placeholder="purchase@email.com"
+                          className={`w-full bg-theme-input border-2 ${verifyError ? 'border-red-500/50' : 'border-theme-border'} rounded-2xl pl-10 pr-4 py-3 text-sm font-bold focus:border-primary outline-none transition-all`}
+                          value={emailField}
+                          onChange={(e) => setEmailField(e.target.value)}
+                      />
+                  </div>
+                  <button 
+                      onClick={verifyPurchase}
+                      disabled={isVerifying}
+                      className="px-6 py-3 bg-theme-text text-surface rounded-2xl font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+                  >
+                      {isVerifying ? (
+                          <i className="fas fa-circle-notch animate-spin"></i>
+                      ) : (
+                          <i className="fas fa-check"></i>
+                      )}
+                      <span className="hidden sm:inline">{isVerifying ? 'Wait...' : 'Activate'}</span>
+                  </button>
+              </div>
+              {verifyError && (
+                  <p className="text-red-500 text-[10px] font-black uppercase tracking-wider animate-shake text-center md:text-left mt-1">
+                      <i className="fas fa-exclamation-circle mr-1"></i>
+                      {verifyError}
+                  </p>
+              )}
+          </div>
+      </div>
+
       {userAccount.isActivated && (
         <div className="mb-10 p-5 rounded-[2rem] bg-emerald-500/10 border-2 border-emerald-500/20 flex flex-col items-center gap-2 text-center">
             <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-lg shadow-emerald-500/20 mb-2">
@@ -120,9 +172,17 @@ const PricingView: React.FC<PricingViewProps> = ({ userAccount, onActivate, them
               <p className="text-theme-sub text-xs mt-2 leading-relaxed min-h-[3rem]">{pkg.description}</p>
             </div>
 
-            <div className="mb-8">
-              <span className="text-4xl font-black text-theme-text">{pkg.price}</span>
-              <span className="text-theme-sub text-sm font-bold opacity-60 ml-1">/ one-time</span>
+            <div className="mb-8 flex flex-col">
+              {pkg.sellPrice && pkg.discount && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl font-bold text-theme-sub line-through opacity-60">{pkg.price}</span>
+                  <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-500 dark:bg-emerald-400/20 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-full">{pkg.discount}</span>
+                </div>
+              )}
+              <div className="flex items-baseline">
+                <span className="text-4xl font-black text-theme-text">{pkg.sellPrice || pkg.price}</span>
+                <span className="text-theme-sub text-sm font-bold opacity-60 ml-1">/ one-time</span>
+              </div>
             </div>
 
             <ul className="space-y-4 mb-10">
@@ -162,60 +222,6 @@ const PricingView: React.FC<PricingViewProps> = ({ userAccount, onActivate, them
             </div>
       </div>
 
-      {/* Activation Section */}
-      <div className="mt-20 max-w-lg mx-auto bg-card border-2 border-theme-border rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10 text-6xl">
-              <i className="fas fa-key"></i>
-          </div>
-          
-          <div className="relative text-center">
-              <h3 className="text-2xl font-black text-theme-text mb-2">Already Purchased?</h3>
-              <p className="text-theme-sub text-xs font-medium mb-8">
-                  Enter the email address you used during checkout to activate your lifetime license.
-              </p>
-
-              <div className="space-y-4">
-                  <div className="relative">
-                      <i className="fas fa-envelope absolute left-5 top-1/2 -translate-y-1/2 text-theme-sub"></i>
-                      <input 
-                          type="email" 
-                          placeholder="purchase@email.com"
-                          className={`w-full bg-theme-input border-2 ${verifyError ? 'border-red-500/50' : 'border-theme-border'} rounded-2xl pl-12 pr-5 py-4 text-sm font-bold focus:border-primary outline-none transition-all`}
-                          value={emailField}
-                          onChange={(e) => setEmailField(e.target.value)}
-                      />
-                  </div>
-
-                  {verifyError && (
-                      <p className="text-red-500 text-[10px] font-black uppercase tracking-wider animate-shake">
-                          <i className="fas fa-exclamation-circle mr-1"></i>
-                          {verifyError}
-                      </p>
-                  )}
-
-                  <button 
-                      onClick={verifyPurchase}
-                      disabled={isVerifying}
-                      className="w-full py-4 bg-theme-text text-surface rounded-2xl font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                  >
-                      {isVerifying ? (
-                          <i className="fas fa-circle-notch animate-spin"></i>
-                      ) : (
-                          <i className="fas fa-shield-check"></i>
-                      )}
-                      <span>{isVerifying ? 'Verifying Order...' : 'Verify & Activate'}</span>
-                  </button>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-theme-border/50">
-                  <div className="flex items-center justify-center gap-4 text-theme-sub text-[10px] font-black uppercase tracking-widest opacity-40">
-                      <span>Instant Activation</span>
-                      <span className="w-1 h-1 bg-theme-sub rounded-full"></span>
-                      <span>Secure Verification</span>
-                  </div>
-              </div>
-          </div>
-      </div>
     </div>
   );
 };

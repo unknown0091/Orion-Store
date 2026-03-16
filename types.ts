@@ -91,6 +91,8 @@ export interface StorePackage {
   id: string;
   tier: PackageTier;
   price: string;
+  sellPrice?: string;
+  discount?: string;
   name: string;
   description: string;
   features: string[];
